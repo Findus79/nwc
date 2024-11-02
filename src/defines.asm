@@ -1,0 +1,16 @@
+; some defines for gamestates etc...
+
+
+STATE_PLAYING = %00000001
+STATE_PAUSED  = %00000010
+
+GS_TITLESCREEN = %00000001
+GS_INGAME      = %00000010
+
+; bullet flags
+BULLET_IN_USE       = #%10000000
+BULLET_EXPLODING    = #%01000000
+
+BULLET_SPEED    = #6
+
+
