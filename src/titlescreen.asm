@@ -17,6 +17,17 @@ Titlescreen_OnEnter
     ; disable dma
     stz     $80420C
 
+    ; load music
+    ; #AXY16
+	; lda #<>spc700_code
+	; ldx #`spc700_code
+	; jsl SPC_Init
+	; lda #1
+	; jsl SPC_Stereo
+	; lda #<>music_1
+	; ldx #`music_1
+	; jsl SPC_Play_Song
+
     ; set data_ptr
     #A8
     lda     #`TitlescreenData
@@ -189,16 +200,15 @@ Titlescreen_OnEnter
     stz     $80210e ; bg1
     stz     $80210e
 
+    lda     #255
+    sta     $802110
+    stz     $802110
+    
     stz     $80210f ; bg2 
     stz     $80210f
 
     stz     $802111 ; bg3
     stz     $802111
-
-    ; bg2 vscroll
-    lda     #255
-    sta     $802110
-    stz     $802110
 
     ; init mosaic
     lda     #%00000011
@@ -235,7 +245,7 @@ Titlescreen_OnEnter
 
 Titlescreen_Loop
     #A8
-    Titlescreen_Loop_Wait
+Titlescreen_Loop_Wait
         lda     NMIReadyNF
         bpl     Titlescreen_Loop_Wait
         stz     NMIReadyNF          ; clear flag
@@ -261,6 +271,8 @@ _fadeOut
 
 _mainUpdate
         
+        jsr ShadowOAM_Clear
+
         .block  ; handle hdma scrolling values
             lda     hdma_scroll_a.lo
             inc     a

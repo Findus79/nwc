@@ -1,0 +1,2 @@
+Sprites.png
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.MainSprite.layer-Player.map001.json

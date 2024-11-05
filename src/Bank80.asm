@@ -148,13 +148,10 @@ InitSNESAndMirror
 InitAudioDriver
     ; #AXY16
     ; lda     #<>spc700_code
-    ; ldx     #81;`<>spc700_code
+    ; ldx     #`spc700_code
     ; jsl     SPC_Init
     ; lda 	#1
     ; jsl     SPC_Stereo
-    ; lda     #<>music_1
-    ; ldx     #`music_1
-    ; jsl     SPC_Play_Song
     ; #A8
 
     ; CLI
@@ -163,12 +160,11 @@ InitAudioDriver
 
 
 .include "defines.asm"
-.include "collision_macros.asm"
 
 ;.include "spc.asm"
 .include "titlescreen.asm"
 .include "ingame.asm"
-;.include "music/music.asm"
+.include "music/music.asm"
 
 
 DMAZero .word   $0000
@@ -300,7 +296,8 @@ ShadowOAM_Clear
     rts
 
 
-CopyMetasprite .block
+CopyMetasprite 
+.block
     phb
     php
 
@@ -380,62 +377,46 @@ VBlank
     jml     VBlankFast
 
 VBlankFast
-    phb     ; push data bank
-    phk
-    plb
-    #A8
+    phb						; Save Data Bank
+	phk
+	plb						; Set Data Bank to Match Program Bank
+	#A8						; A8
+	bit $804210				; Ack NMI
+	bit@W NMIReadyNF,b	    ; Check if this is safe
+	bpl _ready
+		plb					; No, restore Data Bank
+		rti					; Exit
+_ready						; Safe
+	#AXY16					; A16 XY16
+	pha
+	phx
+	phy						; Save A,X,Y
+	phd						; Save the DP register
+	lda #0000				; or where ever you want your NMI DP
+	tcd						; set DP to known value
+	; do update code here
+	#AXY16
+        inc current_frame
 
-    bit     $804210         ; ack nmi
-    bit@w   NMIReadyNF,b    ; check if this is safe
-    bpl     _ready
-        plb ; restore/pop databank
-        rti
-_ready
-    #AXY16                  ; set A/XY to 16 bit
-    pha     
-    phx
-    phy                     ; save registers
-    phd                     ; save dp
-    lda     #$0000
-    tcd
-    ; here goes the VRAM update.
-_vram_update
+    #AXY8
+        jsr DMA_OAM
 
-    ; increment frame number
-    inc     current_frame
-
-    .block ; OAM update
-        jsr     DMA_OAM         ; upload shadow OAM
-        jsr     ShadowOAM_Clear ; ?
-    .bend
-
-    ; do something else
-    ; update shadow registers
-    lda     reg_brightness
-    sta     $802100
-
-    ;lda     reg_mosaic
-    ;sta     $802106
-
-    ; end
-_done
-    #A8            ; set A to 8bit
-    lda     #$FF
-    sta     NMIReadyNF      ; set nmi ready flag
-    #AXY16
-    pld
-    ply
-    plx
-    pla
-    plb                     ; restore registers
-    rti
-
-_update
-    
-    rti
-
+        ; write shadow PPU registers
+        lda     reg_brightness
+        sta     $802100
+	
+    ; finish
+    #A8					; A8
+	lda #$FF				; Doing this is slightly faster than DEC, but 2 more bytes
+	sta NMIReadyNF		; set NMI Done Flag
+	#AXY16				; A16 XY16
+	pld					; restore DP page
+	ply
+	plx
+	pla					; Restore A,X,Y
+	plb					; Restore Data Bank
 justRTI
-    rti
+	rti					; Exit
 
 
     

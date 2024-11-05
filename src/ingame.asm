@@ -118,7 +118,7 @@ Ingame_OnEnter
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
-                ldx     #$2000  ; at start of vram
+                ldx     #$4000  ; at start of vram
                 stx     $802116 ;
 
                 lda     src_bank
@@ -151,7 +151,82 @@ Ingame_OnEnter
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
-                ldx     #$2800  ; at start of vram
+                ldx     #$4800  ; at start of vram
+                stx     $802116 ;
+
+                lda     src_bank
+                ldx     src_address
+                ldy     src_size
+
+                jsr     DMA_VRAM
+            ply ; pop index
+        plb
+    .bend
+
+    ; load sprite data
+    ; set data_ptr
+    #A8
+    lda     #`SpriteData
+    sta     data_bnk
+    #A16
+    lda     #<>SpriteData
+    sta     data_ptr
+
+    ; init table index
+    #XY16
+    ldy     #0
+
+    .block  ; load sprite data
+        ; palette first
+        phb
+            lda     [data_ptr], y   ; load palette data bank
+            sta     src_bank
+            iny
+
+            lda     [data_ptr], y   ; load palette data address
+            sta     src_address 
+            iny
+            iny     ; 2 bytes
+
+            lda     [data_ptr], y   ; load palette size
+            sta     src_size
+            iny
+            iny
+
+            phy     ; push index
+                #A8
+                lda     #128        ; palette index offset (in bytes)
+                sta     $802121     ;
+                lda     src_bank
+                ldx     src_address
+                ldy     src_size
+
+                jsr     DMA_Palette
+            ply     ; pop index
+        plb
+        ; sprite tiles
+        #A16
+        phb
+            lda     [data_ptr], y   ; load tiles data bank
+            sta     src_bank
+            iny
+
+            lda     [data_ptr], y   ; load tiles data address
+            sta     src_address
+            iny
+            iny
+
+            lda     [data_ptr], y   ; load tiles data size
+            sta     src_size
+            iny
+            iny
+
+            phy ; push index
+                #A8
+                lda     #$80
+                sta     $802115 ; set vram transfer
+
+                ldx     #$2000  ; at start of vram
                 stx     $802116 ;
 
                 lda     src_bank
@@ -172,14 +247,18 @@ Ingame_OnEnter
     sta     $80210B
 
     ; setup bg map addresses
-    lda     #%00100010  ; bg1: 32x64 @ 4000/2000
+    lda     #%01000010  ; bg1: 32x64 @ 4000/2000
     sta     $802107     ;
 
-    lda     #%00101010  ; bg2: 32x64 @ 5600/2800
+    lda     #%01001010  ; bg2: 32x64 @ 5600/2800
     sta     $802108     ;
 
+    ; setup sprite mode and address
+    ;lda     #%00000000
+    ;sta     $802101
+
     ; init layers (main)
-    lda     #%00000010  ; obj | bg4 | bg3 | bg2 | bg1
+    lda     #%00010010  ; obj | bg4 | bg3 | bg2 | bg1
     sta     $80212C
     ; init layers (sub)
     lda     #%00000001
@@ -291,6 +370,17 @@ _mainUpdate
         .bend
         
         .block  ; handle input
+        .bend
+
+        .block  ; sprite loop
+            #A16
+            jsr     ShadowOAM_Clear
+
+            #A8
+            lda     #100
+            sta     sprite_pos_x
+            sta     sprite_pos_y
+            ;SetMetasprite PlayerSprite, sprite_pos_x, sprite_pos_y
         .bend
 
 _done

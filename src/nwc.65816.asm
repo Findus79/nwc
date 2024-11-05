@@ -241,16 +241,39 @@ hdma_scroll_b       .dunion HLWord
         .word   len(binary("../data/Ingame/Background.map"))
     .bend
 
+    SpriteData
+    .block
+        .byte   `SpritePalette
+        .word   <>SpritePalette
+        .word   len(binary("../data/Sprites/Sprites.palette"))
+
+        .byte   `SpriteTiles
+        .word   <>SpriteTiles
+        .word   len(binary("../data/Sprites/Sprites.tiles"))
+    .bend
+
     TitlescreenPalette  .binary "../data/Titlescreen/Titlescreen.palette"
     TitlescreenTiles    .binary "../data/Titlescreen/Foreground.tiles"
     TitlescreenMap_BG   .binary "../data/Titlescreen/Background.map"
     TitlescreenMap_FG   .binary "../data/Titlescreen/Foreground.map"
 
-    IngamePalette  .binary "../data/Ingame/Ingame.palette"
-    IngameTiles    .binary "../data/Ingame/Foreground.tiles"
-    IngameMap_BG   .binary "../data/Ingame/Background.map"
-    IngameMap_FG   .binary "../data/Ingame/Foreground.map"
+    IngamePalette   .binary "../data/Ingame/Ingame.palette"
+    IngameTiles     .binary "../data/Ingame/Foreground.tiles"
+    IngameMap_BG    .binary "../data/Ingame/Background.map"
+    IngameMap_FG    .binary "../data/Ingame/Foreground.map"
 
+    SpritePalette   .binary "../data/Sprites/Sprites.palette"
+    SpriteTiles     .binary "../data/Sprites/Sprites.tiles"
+
+    PlayerSprite    .binary "../data/Sprites/Player.metasprite"
+.send
+
+.section secBank82
+    spc700_code     .binary "../data/Music/spc700.bin"
+.send
+
+.section secBank83
+    music_1         .binary "../data/Music/music_1.bin"
 .send
 
 ; useful definitions from Oziphantom
