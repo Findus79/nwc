@@ -312,6 +312,16 @@ Ingame_OnEnter
     stz     $804016
     lda     #%10000001
     sta     $804200
+
+    ; setup player pos
+    lda     #128
+    sta     player_x_pos
+    sta     player_y_pos
+
+    lda     #20
+    sta     player2_x_pos
+    sta     player2_y_pos
+
 .bend
 
 Ingame_Loop
@@ -377,10 +387,9 @@ _mainUpdate
             jsr     ShadowOAM_Clear
 
             #A8
-            lda     #100
-            sta     sprite_pos_x
-            sta     sprite_pos_y
-            ;SetMetasprite PlayerSprite, sprite_pos_x, sprite_pos_y
+            jsl SetOAMPtr
+            SetMetasprite PlayerSprite, player_x_pos, player_y_pos
+            SetMetasprite PlayerSprite, player2_x_pos, player2_y_pos
         .bend
 
 _done

@@ -295,9 +295,18 @@ ShadowOAM_Clear
     plp
     rts
 
+SetOAMPtr
+    pha
+        #A16
+        lda #<>ShadowOAM-1
+        sta oam_ptr
+        #A8
+        lda #`ShadowOAM
+        sta oam_bank
+    pla
+    rts
 
-CopyMetasprite 
-.block
+CopyMetasprite
     phb
     php
 
@@ -308,69 +317,52 @@ CopyMetasprite
     stx sprite_pos_x
     sty sprite_pos_y
     sta sprite_address
-
+    
     #A8
     lda tmp_0
     sta sprite_bank
-
+    
     #XY8
 
     lda [sprite_address]
     tax ; use number of tiles for tile-copy loop
-    #XY16
     ldy #1
 
     _tile_loop
-        phx
-            ldx oam_offset
-            clc
-            lda [sprite_address],y    ; relative x position
-            adc sprite_pos_x          ; add absolute x position
-            sta [oam_ptr]
-            #A16
-            lda oam_ptr
-            ina
-            sta oam_ptr
-            #A8
-            iny
+        clc
+        lda [sprite_address],y      ; relative x position
+        adc sprite_pos_x            ; add absolute x position
+        sta [oam_ptr], y
+        iny
 
-            clc
-            lda [sprite_address],y    ; relative y position
-            adc sprite_pos_y            ; add absolute y position
-            sta [oam_ptr]            ; store
-            #A16
-            lda oam_ptr
-            ina
-            sta oam_ptr
-            #A8
-            iny
+        clc
+        lda [sprite_address],y      ; relative y position
+        adc sprite_pos_y            ; add absolute y position
+        sta [oam_ptr], y            ; store
+        iny
 
-            lda [sprite_address],y    ; tile number
-            sta [oam_ptr]            ; store
-            #A16
-            lda oam_ptr
-            ina
-            sta oam_ptr
-            #A8
-            iny
+        lda [sprite_address],y      ; tile number
+        sta [oam_ptr], y            ; store
+        iny
 
-            lda [sprite_address],y    ; attributes
-            sta [oam_ptr]
-            #A16
-            lda oam_ptr
-            ina
-            sta oam_ptr
-            #A8
-            iny
-            
-        plx
+        lda [sprite_address],y      ; attributes
+        sta [oam_ptr], y
+        iny
         dex
         bne _tile_loop
-        
+    ; done. increment oam_ptr by
+    #A16
+    #XY8
+    dey
+    clc 
+    lda #0
+    tya
+    adc oam_ptr
+    sta oam_ptr
+
     plb
     plp
     rts
-.bend
 
 
 VBlank
@@ -439,6 +431,13 @@ framediff        .word   ?
 ; shadow registers to be manipulated by level scripting
 reg_mosaic      .byte   ?
 reg_brightness  .byte   ?   ; [0-15]
+
+player_x_pos        .byte   ?
+player_y_pos        .byte   ?
+
+player2_x_pos        .byte   ?
+player2_y_pos        .byte   ?
+
 
 scroll_v_bg     .dunion HLWord
 scroll_v_fg     .dunion HLWord
