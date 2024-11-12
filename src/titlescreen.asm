@@ -10,8 +10,11 @@ Titlescreen
 
 Titlescreen_OnEnter
 .block
-    ; disable vblank
-    lda     #%10001111
+    ; disable NMI
+    #A8
+    stz     $804200     ; disable NMI and auto-joypad
+    ; enable force blank
+    lda     #%10000000
     sta     $802100
 
     ; disable dma
@@ -37,16 +40,19 @@ Titlescreen_OnEnter
     sta     data_ptr
 
     ; init table index
+    #A8
     #XY16
     ldy     #0
 
     ; load palette
     .block
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load palette data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load palette data address
             sta     src_address 
             iny
@@ -67,17 +73,18 @@ Titlescreen_OnEnter
 
                 jsr     DMA_Palette
             ply     ; pop index
-        plb
+        ;plb
     .bend
 
     ; load tiles
     .block
-        #A16
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load tiles data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load tiles data address
             sta     src_address
             iny
@@ -90,30 +97,34 @@ Titlescreen_OnEnter
 
             phy ; push index
                 #A8
+                #XY8
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
+                #XY16
                 ldx     #$0000  ; at start of vram
                 stx     $802116 ;
 
+                #A8
                 lda     src_bank
                 ldx     src_address
                 ldy     src_size
 
                 jsr     DMA_VRAM
             ply ; pop index
-        plb
+        ;plb
     .bend
 
     ; load maps
     .block
-        #A16
         ; foreground
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load bg map data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load bg map data address
             sta     src_address
             iny
@@ -129,6 +140,7 @@ Titlescreen_OnEnter
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
+                #XY16
                 ldx     #$2000  ; at start of vram
                 stx     $802116 ;
 
@@ -138,15 +150,16 @@ Titlescreen_OnEnter
 
                 jsr     DMA_VRAM
             ply ; pop index
-        plb
+        ;plb
 
         ; background
-        #A16
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load fg map data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load fg map data address
             sta     src_address
             iny
@@ -162,6 +175,7 @@ Titlescreen_OnEnter
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
+                #XY16
                 ldx     #$2800  ; at start of vram
                 stx     $802116 ;
 
@@ -171,9 +185,10 @@ Titlescreen_OnEnter
 
                 jsr     DMA_VRAM
             ply ; pop index
-        plb
+        ;plb
     .bend
 
+    #AXY8
     ; setup bg mode
     lda     #$01        ; set screen mode 1 (4/4/2 bpp)
     sta     $802105
@@ -194,21 +209,18 @@ Titlescreen_OnEnter
     sta     $80212C
 
     ; clear sprite OAM
-    jsl     ShadowOAM_Clear
+    ;jsr     ShadowOAM_Clear
 
     ; reset scrolling registers
     stz     $80210e ; bg1
     stz     $80210e
 
     lda     #255
-    sta     $802110
-    stz     $802110
+    sta     scroll_v_bg.lo
+    stz     scroll_v_bg.hi
     
-    stz     $80210f ; bg2 
-    stz     $80210f
-
-    stz     $802111 ; bg3
-    stz     $802111
+    stz     scroll_v_fg.lo
+    stz     scroll_v_fg.hi
 
     ; init mosaic
     lda     #%00000011
@@ -216,6 +228,8 @@ Titlescreen_OnEnter
     sta     $802106
 
     .block ; init hdma table
+        #A8
+        #XY16
         ; setup h-dma animation (indirect bg2 animation)
         sep     #$20
         lda     #%01000010      ; to ppu, 1 register, write twice
@@ -232,48 +246,34 @@ Titlescreen_OnEnter
         sta     $80420C         ; $420c
     .bend
 
-    ; re-enable vblank (with full dark to begin)
+    #A16
+    lda     #<>Titlescreen_Main
+    sta     gamestate_ptr
+
+    lda     #<>Titlescreen_VBlank
+    sta     vblank_ptr
+
+    #XY8
     #A8
-    stz     reg_brightness
-    sta     $802100
 
     ; enable NMI and Joypads
-    stz     $804016
+    lda     $804210
+
     lda     #%10000001
     sta     $804200
+
+    rts
 .bend
 
-Titlescreen_Loop
-    #A8
-Titlescreen_Loop_Wait
-        lda     NMIReadyNF
-        bpl     Titlescreen_Loop_Wait
-        stz     NMIReadyNF          ; clear flag
-
-        
-_fadeIn
-        lda     current_frame
-        bit     #1
-        beq     _mainUpdate
-
-        ; until reg_brightness < 16 increment and do not take input from player
-        lda     reg_brightness
-        cmp     #$0F
-        beq     _mainUpdate ; full brightness?
-        
-        ina
-        and     #%00001111
-        sta     reg_brightness
-
-        jmp     _mainUpdate
-
-_fadeOut
-
-_mainUpdate
-        
-        jsr ShadowOAM_Clear
-
-        .block  ; handle hdma scrolling values
+Titlescreen_Main
+    ;jsr ShadowOAM_Clear
+    .block
+        ; phb
+        ; pha
+        ; phx
+        ; phy
+        #A16
+        .block
             lda     hdma_scroll_a.lo
             inc     a
             sta     hdma_scroll_a.lo
@@ -282,24 +282,43 @@ _mainUpdate
             dec     A
             sta     hdma_scroll_b.lo
         .bend
-
+        
         .block  ; handle input
-            
             jsr     PAD_READ
-            #A8
-            lda     pad_1_pressed+1
-            and     #$80
-            bne     Titlescreen_OnExit
+            #A16
+            lda     pad_1_pressed
+            and     #PAD_START
+            bne     _exit
+            jmp     _done
 
+            _exit
+                #A16
+                lda     #<>Ingame_OnEnter
+                sta     gamestate_ptr
+
+            _done
         .bend
+        #A8
+        ; ply
+        ; plx
+        ; pla
+        ; plb
+    .bend
 
-_done
-        jmp     Titlescreen_Loop
+    _done
+        rts
 
+Titlescreen_VBlank
+    phb
+    ; #AXY8
+    ;     jsr DMA_OAM
 
-Titlescreen_OnExit
-.block
-    stz     $80420C     ; stop h-dma
-    jmp     Ingame_OnEnter
-.bend
+    ; write shadow PPU registers
+    #A8
+    lda     reg_brightness
+    inc     A
+    and     #%00001111
+    sta     reg_brightness
+    plb
+    rts
 

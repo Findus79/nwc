@@ -22,7 +22,7 @@ Reset
     jml     ResetHi
 
 ResetHi
-    rep     #$30            ; a/xy to 16-bit
+    #AXY16                  ; a/xy to 16-bit
     ldx     #$1FFF          ; set stack pointer/address
     txs
     phk
@@ -46,7 +46,7 @@ ClearWRAM
     sta     $80420B         ; start dma
     sta     $80420B         ; start dma again (2 times 64k matches 128k wram)
 InitSNESAndMirror
-    rep     #$20            ; a16
+    #A16
     lda     #$008F      ; FORCE BLANK, SET OBSEL TO 0
     sta     $802100
     stz     $802105 ;6
@@ -120,7 +120,7 @@ InitSNESAndMirror
     stz     $80420A ;B
     stz     $80420C ;D
     ; CLEAR VRAM
-    REP     #$20       ; A16
+    #A16
     lda     #$1809     ; A -> B, FIXED SOURCE, WRITE WORD | VRAM
     sta     $804300
     lda     #<>DMAZero ; THIS GET THE LOW WORD, YOU WILL NEED TO CHANGE IF NOT USING 64TASS
@@ -138,7 +138,7 @@ InitSNESAndMirror
     sta     $804300
     lda     #$200      ; 512 BYTES
     sta     $804305
-    SEP     #$20       ; A8
+    #A8
     stz     $802121    ; staRT AT 0
     lda     #$01
     sta     $80420B    ; FIRE DMA
@@ -154,25 +154,51 @@ InitAudioDriver
     ; jsl     SPC_Stereo
     ; #A8
 
-    ; CLI
+    cli
 
-    jmp     Titlescreen
+    #A16
+    lda     #<>Titlescreen_OnEnter
+    sta     gamestate_ptr
+    stz     vblank_ptr
+
+    ; enable nmi
+    #XY8
+    #A8
+    lda     $804210
+    lda     #%10000001
+    sta     $804200
+
+    
+; GAME LOOP
+Game_Loop
+    #A8
+Game_Loop_Wait
+    lda     NMIReadyNF
+    bpl     Game_Loop_Wait
+    stz     NMIReadyNF          ; clear flag
+
+    ldx     #0
+    jsr     (gamestate_ptr,k,x)
+
+    jmp     Game_Loop
+
+
 
 
 .include "defines.asm"
-
 ;.include "spc.asm"
 .include "titlescreen.asm"
 .include "ingame.asm"
-.include "music/music.asm"
-
+;.include "music/music.asm"
 
 DMAZero .word   $0000
 
 DMA_Palette
-    phb
-    php
+    ;phb
+    ;php
 
+    #A8
+    #XY16
     stx     $804302     ; source address
     sta     $804304     ; source bank
     sty     $804305     ; bytes to transfer
@@ -183,14 +209,14 @@ DMA_Palette
     lda     #$01        ; start
     sta     $80420B     ; dma transfer
 
-    plp
-    plb
+    ;plp
+    ;plb
 
     rts
 
 DMA_VRAM
-    phb
-    php
+    ;phb
+    ;php
 
     ; dma setup
     stx     $804302     ; data offset
@@ -204,8 +230,8 @@ DMA_VRAM
     lda     #$01
     sta     $80420B      ; start dma transfer
 
-    plp
-    plb
+    ;plp
+    ;plb
     rts
 
 DMA_OAM
@@ -387,17 +413,38 @@ _ready						; Safe
 	lda #0000				; or where ever you want your NMI DP
 	tcd						; set DP to known value
 	; do update code here
-	#AXY16
-        inc current_frame
+    inc     current_frame
 
-    #AXY8
-        jsr DMA_OAM
+    clc
+    lda     vblank_ptr
+    cmp     #$0000
+    beq     _finish
 
-        ; write shadow PPU registers
-        lda     reg_brightness
-        sta     $802100
-	
+    ; #A8
+	ldx     #0
+    jsr     (vblank_ptr,k,x)
+
+    ; write shadow registers
+    #A8
+    lda     reg_brightness
+    sta     $802100
+    lda     reg_mosaic
+    sta     $802106
+    
+    ; scroll bg2 (background)
+    lda     scroll_v_bg.lo
+    sta     $802110
+    lda     scroll_v_bg.hi
+    sta     $802110
+    ; scroll bg1 (foreground)
+    lda     scroll_v_fg.lo
+    sta     $80210e
+    lda     scroll_v_fg.hi
+    sta     $80210e
+
     ; finish
+_finish
+    #XY8
     #A8					; A8
 	lda #$FF				; Doing this is slightly faster than DEC, but 2 more bytes
 	sta NMIReadyNF		; set NMI Done Flag
@@ -438,6 +485,9 @@ player_y_pos        .byte   ?
 player2_x_pos        .byte   ?
 player2_y_pos        .byte   ?
 
+vblank_ptr      .dunion HLWord
+gamestate_ptr   .dunion HLWord
+screen_fx_ptr   .dunion HLWord
 
 scroll_v_bg     .dunion HLWord
 scroll_v_fg     .dunion HLWord

@@ -10,8 +10,11 @@ Ingame
 
 Ingame_OnEnter
 .block
-    ; disable vblank
-    lda     #%10001111
+    ; disable NMI
+    #A8
+    stz     $804200     ; disable NMI and auto-joypad
+    ; enable force blank
+    lda     #%10000000
     sta     $802100
 
     ; disable dma
@@ -31,11 +34,13 @@ Ingame_OnEnter
 
     ; load palette
     .block
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load palette data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load palette data address
             sta     src_address 
             iny
@@ -56,17 +61,18 @@ Ingame_OnEnter
 
                 jsr     DMA_Palette
             ply     ; pop index
-        plb
+        ;plb
     .bend
 
     ; load tiles
     .block
-        #A16
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load tiles data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load tiles data address
             sta     src_address
             iny
@@ -79,30 +85,34 @@ Ingame_OnEnter
 
             phy ; push index
                 #A8
+                #XY8
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
+                #XY16
                 ldx     #$0000  ; at start of vram
                 stx     $802116 ;
 
+                #A8
                 lda     src_bank
                 ldx     src_address
                 ldy     src_size
 
                 jsr     DMA_VRAM
             ply ; pop index
-        plb
+        ;plb
     .bend
 
     ; load maps
     .block
-        #A16
         ; foreground
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load bg map data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load bg map data address
             sta     src_address
             iny
@@ -118,6 +128,7 @@ Ingame_OnEnter
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
+                #XY16
                 ldx     #$4000  ; at start of vram
                 stx     $802116 ;
 
@@ -127,15 +138,16 @@ Ingame_OnEnter
 
                 jsr     DMA_VRAM
             ply ; pop index
-        plb
+        ;plb
 
         ; background
-        #A16
-        phb
+        ;phb
+            #A8
             lda     [data_ptr], y   ; load fg map data bank
             sta     src_bank
             iny
 
+            #A16
             lda     [data_ptr], y   ; load fg map data address
             sta     src_address
             iny
@@ -151,6 +163,7 @@ Ingame_OnEnter
                 lda     #$80
                 sta     $802115 ; set vram transfer
 
+                #XY16
                 ldx     #$4800  ; at start of vram
                 stx     $802116 ;
 
@@ -160,7 +173,7 @@ Ingame_OnEnter
 
                 jsr     DMA_VRAM
             ply ; pop index
-        plb
+        ;plb
     .bend
 
     ; load sprite data
@@ -173,71 +186,78 @@ Ingame_OnEnter
     sta     data_ptr
 
     ; init table index
-    #XY16
-    ldy     #0
+    ; #XY16
+    ; ldy     #0
 
-    .block  ; load sprite data
-        ; palette first
-        phb
-            lda     [data_ptr], y   ; load palette data bank
-            sta     src_bank
-            iny
+    ; .block  ; load sprite data
+    ;     ; palette first
+    ;     ;phb
+    ;         #A8
+    ;         lda     [data_ptr], y   ; load palette data bank
+    ;         sta     src_bank
+    ;         iny
 
-            lda     [data_ptr], y   ; load palette data address
-            sta     src_address 
-            iny
-            iny     ; 2 bytes
+    ;         #A16
+    ;         lda     [data_ptr], y   ; load palette data address
+    ;         sta     src_address 
+    ;         iny
+    ;         iny     ; 2 bytes
 
-            lda     [data_ptr], y   ; load palette size
-            sta     src_size
-            iny
-            iny
+    ;         lda     [data_ptr], y   ; load palette size
+    ;         sta     src_size
+    ;         iny
+    ;         iny
 
-            phy     ; push index
-                #A8
-                lda     #128        ; palette index offset (in bytes)
-                sta     $802121     ;
-                lda     src_bank
-                ldx     src_address
-                ldy     src_size
+    ;         phy     ; push index
+    ;             #A8
+    ;             lda     #128        ; palette index offset (in bytes)
+    ;             sta     $802121     ;
+    ;             lda     src_bank
+    ;             ldx     src_address
+    ;             ldy     src_size
 
-                jsr     DMA_Palette
-            ply     ; pop index
-        plb
-        ; sprite tiles
-        #A16
-        phb
-            lda     [data_ptr], y   ; load tiles data bank
-            sta     src_bank
-            iny
+    ;             jsr     DMA_Palette
+    ;         ply     ; pop index
+    ;     ;plb
+    ;     ; sprite tiles
+    ;     #A16
+    ;     ;phb
+    ;         #A8
+    ;         lda     [data_ptr], y   ; load tiles data bank
+    ;         sta     src_bank
+    ;         iny
 
-            lda     [data_ptr], y   ; load tiles data address
-            sta     src_address
-            iny
-            iny
+    ;         #A16
+    ;         lda     [data_ptr], y   ; load tiles data address
+    ;         sta     src_address
+    ;         iny
+    ;         iny
 
-            lda     [data_ptr], y   ; load tiles data size
-            sta     src_size
-            iny
-            iny
+    ;         lda     [data_ptr], y   ; load tiles data size
+    ;         sta     src_size
+    ;         iny
+    ;         iny
 
-            phy ; push index
-                #A8
-                lda     #$80
-                sta     $802115 ; set vram transfer
+    ;         phy ; push index
+    ;             #A8
+    ;             #XY8
+    ;             lda     #$80
+    ;             sta     $802115 ; set vram transfer
 
-                ldx     #$2000  ; at start of vram
-                stx     $802116 ;
+    ;             #XY16
+    ;             ldx     #$2000  ; at start of vram
+    ;             stx     $802116 ;
 
-                lda     src_bank
-                ldx     src_address
-                ldy     src_size
+    ;             lda     src_bank
+    ;             ldx     src_address
+    ;             ldy     src_size
 
-                jsr     DMA_VRAM
-            ply ; pop index
-        plb
-    .bend
+    ;             ;jsr     DMA_VRAM
+    ;         ply ; pop index
+    ;     plb
+    ; .bend
 
+    #A8
     ; setup bg mode
     lda     #$01        ; set screen mode 1 (4/4/2 bpp)
     sta     $802105
@@ -274,129 +294,94 @@ Ingame_OnEnter
     lda     #$0e
     sta     $802132         ; coldata
 
-
     ; clear sprite OAM
-    jsl     ShadowOAM_Clear
+    ;jsr     ShadowOAM_Clear
 
+    #A16
     ; reset scrolling registers
-    stz     $80210e ; bg1
-    stz     $80210e
+    stz     scroll_v_bg
+    stz     scroll_v_fg
 
-    stz     $80210f ; bg2 
-    stz     $80210f
-
-    stz     $802111 ; bg3
-    stz     $802111
-
-    ; bg2 vscroll
-    lda     #255
-    sta     $802110
-    stz     $802110
+    #A8
+    lda     #$0F
+    sta     reg_brightness
 
     ; init mosaic
     lda     #%00000011
     sta     reg_mosaic
     sta     $802106
-
-    stz     tmp_0
-
+    
     #A16
-    stz     scroll_v_bg
+    lda     #<>Ingame_VBlank
+    sta     vblank_ptr
+
+    lda     #<>Ingame_Loop
+    sta     gamestate_ptr
 
     ; re-enable vblank (with full dark to begin)
     #A8
-    stz     reg_brightness
-    sta     $802100
-
-    ; enable NMI and Joypads
-    stz     $804016
-    lda     #%10000001
-    sta     $804200
-
     ; setup player pos
     lda     #128
     sta     player_x_pos
-    sta     player_y_pos
+    sta     player_y_pos 
 
     lda     #20
     sta     player2_x_pos
     sta     player2_y_pos
 
+    ; enable NMI and Joypads
+    #XY8
+    #A8
+
+    lda     $804210
+
+    lda     #%10000001
+    sta     $804200
+
+    rts
 .bend
 
 Ingame_Loop
-    #A8
-    Ingame_Loop_Wait
-        lda     NMIReadyNF
-        bpl     Ingame_Loop_Wait
-        stz     NMIReadyNF          ; clear flag
+    ; scroll backgrounds
+    .block ; scroll bg/fg
+        #A16
+        lda     scroll_v_bg
+        dec     A
+        and     #%0000000111111111
+        sta     scroll_v_bg
 
+        lda     scroll_v_fg
+        dec     A
+        dec     A
+        and     #%0000000111111111
+        sta     scroll_v_fg
         
-_fadeIn
-        lda     current_frame
-        bit     #1
-        beq     _mainUpdate
-
-        ; until reg_brightness < 16 increment and do not take input from player
-        lda     reg_brightness
-        cmp     #$0F
-        beq     _mainUpdate ; full brightness?
+        #A8
         
-        ina
-        and     #%00001111
-        sta     reg_brightness
+    .bend
+    
+    .block  ; handle input
+    .bend
 
-        jmp     _mainUpdate
+    .block  ; sprite loop
+        #A16
+        jsr     ShadowOAM_Clear
 
-_fadeOut
+        #A8
+        ;jsr SetOAMPtr
+        ;SetMetasprite PlayerSprite, player_x_pos, player_y_pos
+        ;SetMetasprite PlayerSprite, player2_x_pos, player2_y_pos
+    .bend
 
-_mainUpdate
-        
-        ; scroll backgrounds
-        .block ; scroll bg/fg
-            #A16
-            lda     scroll_v_bg
-            dec     A
-            and     #%0000000111111111
-            sta     scroll_v_bg
-
-            lda     scroll_v_fg
-            dec     A
-            dec     A
-            and     #%0000000111111111
-            sta     scroll_v_fg
-            
-            #A8
-            ; scroll bg2 (background)
-            lda     scroll_v_bg.lo
-            sta     $802110
-            lda     scroll_v_bg.hi
-            sta     $802110
-            ; scroll bg1 (foreground)
-            lda     scroll_v_fg.lo
-            sta     $80210e
-            lda     scroll_v_fg.hi
-            sta     $80210e
-        .bend
-        
-        .block  ; handle input
-        .bend
-
-        .block  ; sprite loop
-            #A16
-            jsr     ShadowOAM_Clear
-
-            #A8
-            jsl SetOAMPtr
-            SetMetasprite PlayerSprite, player_x_pos, player_y_pos
-            SetMetasprite PlayerSprite, player2_x_pos, player2_y_pos
-        .bend
-
-_done
-        jmp     Ingame_Loop
+    _done
+        rts
 
 
-Ingame_OnExit
-.block
-.bend
+Ingame_VBlank
+    phb
+        #AXY8
+            jsr DMA_OAM
+    plb
+    rts
+
 
