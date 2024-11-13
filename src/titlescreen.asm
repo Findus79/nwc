@@ -13,7 +13,7 @@ Titlescreen_OnEnter
     ; disable NMI
     #A8
     stz     $804200     ; disable NMI and auto-joypad
-    ; enable force blank
+    ; enable force blank and set bg brightness to zero
     lda     #%10000000
     sta     $802100
 
@@ -223,9 +223,11 @@ Titlescreen_OnEnter
     stz     scroll_v_fg.hi
 
     ; init mosaic
-    lda     #%00000011
+    lda     #%11111111
     sta     reg_mosaic
     sta     $802106
+
+    stz     reg_brightness
 
     .block ; init hdma table
         #A8
@@ -247,7 +249,7 @@ Titlescreen_OnEnter
     .bend
 
     #A16
-    lda     #<>Titlescreen_Main
+    lda     #<>Titlescreen_FadeIn
     sta     gamestate_ptr
 
     lda     #<>Titlescreen_VBlank
@@ -266,14 +268,143 @@ Titlescreen_OnEnter
 .bend
 
 Titlescreen_Main
-    ;jsr ShadowOAM_Clear
     .block
-        ; phb
-        ; pha
-        ; phx
-        ; phy
         #A16
-        .block
+        .block  ; handle input
+            jsr     PAD_READ
+            #A16
+            lda     pad_1_pressed
+            and     #PAD_START
+            bne     _exit
+
+            lda     pad_1_pressed
+            and     #PAD_LEFT
+            bne     _scroll_logo_left
+
+            lda     pad_1_pressed
+            and     #PAD_RIGHT
+            bne     _scroll_logo_right
+
+            jmp     _done
+
+            _scroll_logo_left
+                #A16
+                lda     #<>Titlescreen_LogoLeft
+                sta     gamestate_ptr
+                jmp     _done
+
+            _scroll_logo_right
+                #A16
+                lda     #<>Titlescreen_LogoRight
+                sta     gamestate_ptr
+                jmp     _done
+
+            _exit
+                #A16
+                lda     #<>Titlescreen_FadeOut
+                sta     gamestate_ptr
+
+            _done
+        .bend
+        #A8
+    .bend
+
+    _done
+        rts
+
+Titlescreen_LogoLeft
+    #A16
+    lda     scroll_h_fg
+    and     #%0000001111111111
+    inc     A
+    sta     scroll_h_fg
+
+    rts
+
+Titlescreen_LogoRight
+    rts
+
+Titlescreen_FadeIn
+    .block
+        #A16
+        lda     current_frame
+        and     #1
+        beq     _done
+
+        #A8
+        clc
+        lda     reg_brightness
+        and     #%00001111
+        cmp     #$0F
+        beq     _exit
+
+        lda     reg_brightness
+        inc     A
+        and     #%00001111
+        sta     reg_brightness
+
+        lda     reg_mosaic
+        clc
+        sbc     #%00010000
+        ora     #%00001111
+        sta     reg_mosaic
+        jmp     _done
+
+        _exit
+            #A8
+            lda     #%00001111
+            sta     reg_mosaic
+            #A16
+            lda     #<>Titlescreen_Main
+            sta     gamestate_ptr
+
+        _done
+    .bend
+    rts
+
+Titlescreen_FadeOut
+    .block
+        #A16
+        lda     current_frame
+        and     #1
+        beq     _done
+
+        #A8
+        clc
+        lda     reg_brightness
+        cmp     #$00
+        beq     _exit
+
+        lda     reg_brightness
+        dec     A
+        and     #%00001111
+        sta     reg_brightness
+
+        lda     reg_mosaic
+        clc
+        adc     #%00010000
+        sta     reg_mosaic
+
+        jmp     _done
+
+        _exit
+            #A16
+            lda     #<>Ingame_OnEnter
+            sta     gamestate_ptr
+
+        _done
+    .bend
+    rts
+
+Titlescreen_VBlank
+    phb
+        .block  ; set hdma scroll values
+            #A16
+            lda     current_frame
+            and     #1
+            bne     _done
+
+            #A8
             lda     hdma_scroll_a.lo
             inc     a
             sta     hdma_scroll_a.lo
@@ -281,44 +412,9 @@ Titlescreen_Main
             lda     hdma_scroll_b.lo
             dec     A
             sta     hdma_scroll_b.lo
-        .bend
-        
-        .block  ; handle input
-            jsr     PAD_READ
-            #A16
-            lda     pad_1_pressed
-            and     #PAD_START
-            bne     _exit
-            jmp     _done
-
-            _exit
-                #A16
-                lda     #<>Ingame_OnEnter
-                sta     gamestate_ptr
-
+            
             _done
         .bend
-        #A8
-        ; ply
-        ; plx
-        ; pla
-        ; plb
-    .bend
-
-    _done
-        rts
-
-Titlescreen_VBlank
-    phb
-    ; #AXY8
-    ;     jsr DMA_OAM
-
-    ; write shadow PPU registers
-    #A8
-    lda     reg_brightness
-    inc     A
-    and     #%00001111
-    sta     reg_brightness
     plb
     rts
 

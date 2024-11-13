@@ -303,8 +303,9 @@ Ingame_OnEnter
     stz     scroll_v_fg
 
     #A8
-    lda     #$0F
-    sta     reg_brightness
+    stz     reg_brightness
+    lda     #%11111111
+    sta     reg_mosaic
 
     ; init mosaic
     lda     #%00000011
@@ -315,7 +316,7 @@ Ingame_OnEnter
     lda     #<>Ingame_VBlank
     sta     vblank_ptr
 
-    lda     #<>Ingame_Loop
+    lda     #<>Ingame_FadeIn
     sta     gamestate_ptr
 
     ; re-enable vblank (with full dark to begin)
@@ -343,23 +344,6 @@ Ingame_OnEnter
 
 Ingame_Loop
     ; scroll backgrounds
-    .block ; scroll bg/fg
-        #A16
-        lda     scroll_v_bg
-        dec     A
-        and     #%0000000111111111
-        sta     scroll_v_bg
-
-        lda     scroll_v_fg
-        dec     A
-        dec     A
-        and     #%0000000111111111
-        sta     scroll_v_fg
-        
-        #A8
-        
-    .bend
-    
     .block  ; handle input
     .bend
 
@@ -376,9 +360,66 @@ Ingame_Loop
     _done
         rts
 
+Ingame_FadeIn
+    .block
+        #A16
+        lda     current_frame
+        and     #1
+        beq     _done
+
+        #A8
+        clc
+        lda     reg_brightness
+        and     #%00001111
+        cmp     #$0F
+        beq     _exit
+
+        lda     reg_brightness
+        inc     A
+        and     #%00001111
+        sta     reg_brightness
+
+        lda     reg_mosaic
+        clc
+        sbc     #%00010000
+        ora     #%00001111
+        sta     reg_mosaic
+
+        jmp     _done
+
+        _exit
+            #A8
+            lda     #%00001111
+            sta     reg_mosaic
+            #A16
+            lda     #<>Ingame_Loop
+            sta     gamestate_ptr
+
+        _done
+    .bend
+    rts
+
+Ingame_FadeOut
+    rts
 
 Ingame_VBlank
     phb
+        .block ; scroll bg/fg
+            #A16
+            lda     scroll_v_bg
+            dec     A
+            and     #%0000000111111111
+            sta     scroll_v_bg
+
+            lda     scroll_v_fg
+            dec     A
+            dec     A
+            and     #%0000000111111111
+            sta     scroll_v_fg
+            
+            #A8
+        .bend
+        
         #AXY8
             jsr DMA_OAM
     plb

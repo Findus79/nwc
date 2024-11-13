@@ -442,6 +442,11 @@ _ready						; Safe
     lda     scroll_v_fg.hi
     sta     $80210e
 
+    lda     scroll_h_fg.lo
+    sta     $80210d
+    lda     scroll_h_fg.hi
+    sta     $80210d
+
     ; finish
 _finish
     #XY8
@@ -490,7 +495,10 @@ gamestate_ptr   .dunion HLWord
 screen_fx_ptr   .dunion HLWord
 
 scroll_v_bg     .dunion HLWord
+scroll_h_bg     .dunion HLWord
+
 scroll_v_fg     .dunion HLWord
+scroll_h_fg     .dunion HLWord
 
 NMIReadyNF    .byte   ?
 
