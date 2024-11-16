@@ -1,2 +1,3 @@
 Sprites.png
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.MainSprite.layer-Player.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.spr_gingerbreadman.layer-gingerbreadman.map001.json

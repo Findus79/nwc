@@ -20,17 +20,6 @@ Titlescreen_OnEnter
     ; disable dma
     stz     $80420C
 
-    ; load music
-    ; #AXY16
-	; lda #<>spc700_code
-	; ldx #`spc700_code
-	; jsl SPC_Init
-	; lda #1
-	; jsl SPC_Stereo
-	; lda #<>music_1
-	; ldx #`music_1
-	; jsl SPC_Play_Song
-
     ; set data_ptr
     #A8
     lda     #`TitlescreenData
@@ -215,12 +204,10 @@ Titlescreen_OnEnter
     stz     $80210e ; bg1
     stz     $80210e
 
-    lda     #255
-    sta     scroll_v_bg.lo
-    stz     scroll_v_bg.hi
-    
-    stz     scroll_v_fg.lo
-    stz     scroll_v_fg.hi
+    ; scroll bg 1 pixel.
+    #A8
+    lda     #$FF
+    sta     reg_scroll_v_bg2.lo
 
     ; init mosaic
     lda     #%11111111
@@ -269,18 +256,19 @@ Titlescreen_OnEnter
 
 Titlescreen_Main
     .block
-        #A16
+        #AXY16
         .block  ; handle input
             jsr     PAD_READ
-            #A16
             lda     pad_1_pressed
             and     #PAD_START
             bne     _exit
 
+            clc
             lda     pad_1_pressed
             and     #PAD_LEFT
             bne     _scroll_logo_left
 
+            clc
             lda     pad_1_pressed
             and     #PAD_RIGHT
             bne     _scroll_logo_right
@@ -288,25 +276,25 @@ Titlescreen_Main
             jmp     _done
 
             _scroll_logo_left
-                #A16
                 lda     #<>Titlescreen_LogoLeft
                 sta     gamestate_ptr
                 jmp     _done
 
             _scroll_logo_right
-                #A16
                 lda     #<>Titlescreen_LogoRight
                 sta     gamestate_ptr
                 jmp     _done
 
             _exit
-                #A16
                 lda     #<>Titlescreen_FadeOut
                 sta     gamestate_ptr
 
             _done
         .bend
-        #A8
+
+        .block  ; handle snowflake sprites
+        .bend;
+        #AXY8
     .bend
 
     _done
@@ -314,14 +302,42 @@ Titlescreen_Main
 
 Titlescreen_LogoLeft
     #A16
-    lda     scroll_h_fg
-    and     #%0000001111111111
-    inc     A
-    sta     scroll_h_fg
+    lda     reg_scroll_h_bg1
+    cmp     #$00
+    beq     _exit
 
+    clc     
+    sbc     #4
+    bmi     _exit
+    sta     reg_scroll_h_bg1
+    jmp     _done
+    
+    _exit
+        stz     reg_scroll_h_bg1        ; just to be safe
+        lda     #<>Titlescreen_Main
+        sta     gamestate_ptr
+
+    _done
     rts
 
 Titlescreen_LogoRight
+    #A16
+    lda     reg_scroll_h_bg1
+    cmp     #$100
+    beq     _exit
+
+    clc     
+    adc     #4
+    sta     reg_scroll_h_bg1
+    jmp     _done
+    
+    _exit
+        lda     #$0100
+        sta     reg_scroll_h_bg1        ; just to be safe
+        lda     #<>Titlescreen_Main
+        sta     gamestate_ptr
+
+    _done
     rts
 
 Titlescreen_FadeIn

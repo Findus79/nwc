@@ -266,6 +266,7 @@ hdma_scroll_b       .dunion HLWord
     SpriteTiles     .binary "../data/Sprites/Sprites.tiles"
 
     PlayerSprite    .binary "../data/Sprites/Player.metasprite"
+    Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
 .send
 
 .section secBank82
@@ -323,19 +324,6 @@ Bullet .struct
         worldpos    .dstruct    WorldPosition
         screenpos   .dstruct    ScreenPosition
     .bend
-.ends
-
-TileLayer .struct   ; for "streaming" layers...
-    data_ptr    .word   ?       ; starting address
-    data_bnk    .byte   ?       ; starting bank
-    read_offset .word   ?       ; current offset to read from.
-    dst_vram    .word   ?       ; vram target address
-    src_column  .word   ?
-    src_max_col .word   ?       ; max columns until wrap around.
-    dst_column  .byte   ?
-    screen      .byte   ?
-    scroll_max  .word   ?       ; max scroll in pixels (stops scrolling)
-    scroll_pos  .dunion HLWord  ; current scroll shadow register
 .ends
 
 .comment

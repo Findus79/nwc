@@ -22,7 +22,6 @@ LoadVRAM .macro     ; // 1 src, 2 dst, 3 size
 
 ; place metasprite at given position
 SetMetasprite .macro    ; 1 src metasprite, x pos, y pos
-    nop ; SetMetasprite
     #A8     
     lda     #`\1        ; load src sprite bank
     sta     tmp_0

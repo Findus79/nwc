@@ -186,76 +186,72 @@ Ingame_OnEnter
     sta     data_ptr
 
     ; init table index
-    ; #XY16
-    ; ldy     #0
+    #XY16
+    ldy     #0
 
-    ; .block  ; load sprite data
-    ;     ; palette first
-    ;     ;phb
-    ;         #A8
-    ;         lda     [data_ptr], y   ; load palette data bank
-    ;         sta     src_bank
-    ;         iny
+    .block  ; load sprite data
+        ; palette first
+        #A8
+        lda     [data_ptr], y   ; load palette data bank
+        sta     src_bank
+        iny
 
-    ;         #A16
-    ;         lda     [data_ptr], y   ; load palette data address
-    ;         sta     src_address 
-    ;         iny
-    ;         iny     ; 2 bytes
+        #A16
+        lda     [data_ptr], y   ; load palette data address
+        sta     src_address 
+        iny
+        iny     ; 2 bytes
 
-    ;         lda     [data_ptr], y   ; load palette size
-    ;         sta     src_size
-    ;         iny
-    ;         iny
+        lda     [data_ptr], y   ; load palette size
+        sta     src_size
+        iny
+        iny
 
-    ;         phy     ; push index
-    ;             #A8
-    ;             lda     #128        ; palette index offset (in bytes)
-    ;             sta     $802121     ;
-    ;             lda     src_bank
-    ;             ldx     src_address
-    ;             ldy     src_size
+        phy     ; push index
+            #A8
+            lda     #128        ; palette index offset (in bytes)
+            sta     $802121     ;
+            lda     src_bank
+            ldx     src_address
+            ldy     src_size
 
-    ;             jsr     DMA_Palette
-    ;         ply     ; pop index
-    ;     ;plb
-    ;     ; sprite tiles
-    ;     #A16
-    ;     ;phb
-    ;         #A8
-    ;         lda     [data_ptr], y   ; load tiles data bank
-    ;         sta     src_bank
-    ;         iny
+            jsr     DMA_Palette
+        ply     ; pop index
+    
+        ; sprite tiles
+        #A8
+        lda     [data_ptr], y   ; load tiles data bank
+        sta     src_bank
+        iny
 
-    ;         #A16
-    ;         lda     [data_ptr], y   ; load tiles data address
-    ;         sta     src_address
-    ;         iny
-    ;         iny
+        #A16
+        lda     [data_ptr], y   ; load tiles data address
+        sta     src_address
+        iny
+        iny
 
-    ;         lda     [data_ptr], y   ; load tiles data size
-    ;         sta     src_size
-    ;         iny
-    ;         iny
+        lda     [data_ptr], y   ; load tiles data size
+        sta     src_size
+        iny
+        iny
 
-    ;         phy ; push index
-    ;             #A8
-    ;             #XY8
-    ;             lda     #$80
-    ;             sta     $802115 ; set vram transfer
+        phy ; push index
+            #A8
+            #XY8
+            lda     #$80
+            sta     $802115 ; set vram transfer
 
-    ;             #XY16
-    ;             ldx     #$2000  ; at start of vram
-    ;             stx     $802116 ;
+            #XY16
+            ldx     #$2000  ; at start of vram
+            stx     $802116 ;
 
-    ;             lda     src_bank
-    ;             ldx     src_address
-    ;             ldy     src_size
+            lda     src_bank
+            ldx     src_address
+            ldy     src_size
 
-    ;             ;jsr     DMA_VRAM
-    ;         ply ; pop index
-    ;     plb
-    ; .bend
+            jsr     DMA_VRAM
+        ply ; pop index
+    .bend
 
     #A8
     ; setup bg mode
@@ -274,8 +270,8 @@ Ingame_OnEnter
     sta     $802108     ;
 
     ; setup sprite mode and address
-    ;lda     #%00000000
-    ;sta     $802101
+    lda     #%00000001
+    sta     $802101
 
     ; init layers (main)
     lda     #%00010010  ; obj | bg4 | bg3 | bg2 | bg1
@@ -299,8 +295,7 @@ Ingame_OnEnter
 
     #A16
     ; reset scrolling registers
-    stz     scroll_v_bg
-    stz     scroll_v_fg
+    
 
     #A8
     stz     reg_brightness
@@ -322,13 +317,7 @@ Ingame_OnEnter
     ; re-enable vblank (with full dark to begin)
     #A8
     ; setup player pos
-    lda     #128
-    sta     player_x_pos
-    sta     player_y_pos 
-
-    lda     #20
-    sta     player2_x_pos
-    sta     player2_y_pos
+    
 
     ; enable NMI and Joypads
     #XY8
@@ -352,8 +341,8 @@ Ingame_Loop
         jsr     ShadowOAM_Clear
 
         #A8
-        ;jsr SetOAMPtr
-        ;SetMetasprite PlayerSprite, player_x_pos, player_y_pos
+        jsr SetOAMPtr   ; clear sprite shadow table
+        ;SetMetasprite Enemy_0, player_x_pos, player_y_pos
         ;SetMetasprite PlayerSprite, player2_x_pos, player2_y_pos
     .bend
 
@@ -406,16 +395,16 @@ Ingame_VBlank
     phb
         .block ; scroll bg/fg
             #A16
-            lda     scroll_v_bg
+            lda     reg_scroll_v_bg2
             dec     A
             and     #%0000000111111111
-            sta     scroll_v_bg
+            sta     reg_scroll_v_bg2
 
-            lda     scroll_v_fg
+            lda     reg_scroll_v_bg1
             dec     A
             dec     A
             and     #%0000000111111111
-            sta     scroll_v_fg
+            sta     reg_scroll_v_bg1
             
             #A8
         .bend

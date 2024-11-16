@@ -63,18 +63,23 @@ InitSNESAndMirror
     ;stz mBG23NBA
     stz     $80210D ;E
     stz     $80210D ;E
-    ;stz mBG1HOFS
-    ;stz mBG1VOFS
+    stz     reg_scroll_h_bg1
+    stz     reg_scroll_v_bg1
+
     stz     $80210F ;10
     stz     $80210F ;10
-    ;stz mBG2HOFS
-    ;stz mBG2VOFS
+    stz     reg_scroll_h_bg2
+    stz     reg_scroll_v_bg2
+
     stz     $802111 ;12
     stz     $802111 ;12
-    ;stz mBG3HOFS
-    ;stz mBG3VOFS
+    stz     reg_scroll_h_bg3
+    stz     reg_scroll_v_bg3
+
     stz     $802113 ;14
     stz     $802113 ;14
+    stz     reg_scroll_h_bg4
+    stz     reg_scroll_v_bg4
     ;stz mBG4HOFS
     ;stz mBG4VOFS
     stz     $802119 ;1A to get Mode7
@@ -145,14 +150,14 @@ InitSNESAndMirror
     stz     NMIReadyNF
 
     ; load audio driver
-InitAudioDriver
-    ; #AXY16
-    ; lda     #<>spc700_code
-    ; ldx     #`spc700_code
-    ; jsl     SPC_Init
-    ; lda 	#1
-    ; jsl     SPC_Stereo
-    ; #A8
+; InitAudioDriver
+;     #AXY16
+;     lda     #<>spc700_code
+;     ldx     #`spc700_code
+;     jsl     SPC_Init
+;     lda 	#1
+;     jsl     SPC_Stereo
+;     #A8
 
     cli
 
@@ -189,7 +194,7 @@ Game_Loop_Wait
 ;.include "spc.asm"
 .include "titlescreen.asm"
 .include "ingame.asm"
-;.include "music/music.asm"
+.include "music/music.asm"
 
 DMAZero .word   $0000
 
@@ -333,9 +338,6 @@ SetOAMPtr
     rts
 
 CopyMetasprite
-    phb
-    php
-
     ; tmp_0 src bank
     ; a src address
     ; x pos x
@@ -386,8 +388,6 @@ CopyMetasprite
     adc oam_ptr
     sta oam_ptr
 
-    plb
-    plp
     rts
 
 
@@ -418,12 +418,13 @@ _ready						; Safe
     clc
     lda     vblank_ptr
     cmp     #$0000
-    beq     _finish
+    beq     _write_ppu_registers
 
-    ; #A8
+    ; call user-defined vblank routine
 	ldx     #0
     jsr     (vblank_ptr,k,x)
 
+_write_ppu_registers
     ; write shadow registers
     #A8
     lda     reg_brightness
@@ -431,21 +432,51 @@ _ready						; Safe
     lda     reg_mosaic
     sta     $802106
     
-    ; scroll bg2 (background)
-    lda     scroll_v_bg.lo
-    sta     $802110
-    lda     scroll_v_bg.hi
-    sta     $802110
-    ; scroll bg1 (foreground)
-    lda     scroll_v_fg.lo
-    sta     $80210e
-    lda     scroll_v_fg.hi
-    sta     $80210e
+    .block ; write bg scroll registers
+        #A8
+        ; bg 1 --------------------
+        lda     reg_scroll_h_bg1.lo
+        sta     $80210D
+        lda     reg_scroll_h_bg1.hi
+        sta     $80210D
 
-    lda     scroll_h_fg.lo
-    sta     $80210d
-    lda     scroll_h_fg.hi
-    sta     $80210d
+        lda     reg_scroll_v_bg1.lo
+        sta     $80210E
+        lda     reg_scroll_v_bg1.hi
+        sta     $80210E
+        ; bg 2 --------------------
+        lda     reg_scroll_h_bg2.lo
+        sta     $80210F
+        lda     reg_scroll_h_bg2.hi
+        sta     $80210F
+
+        lda     reg_scroll_v_bg2.lo
+        sta     $802110
+        lda     reg_scroll_v_bg2.hi
+        sta     $802110
+        ; bg 3 --------------------
+        lda     reg_scroll_h_bg3.lo
+        sta     $802111
+        lda     reg_scroll_h_bg3.hi
+        sta     $802111
+
+        lda     reg_scroll_v_bg3.lo
+        sta     $802112
+        lda     reg_scroll_v_bg3.hi
+        sta     $802112
+        ; bg 4 --------------------
+        lda     reg_scroll_h_bg4.lo
+        sta     $802113
+        lda     reg_scroll_h_bg4.hi
+        sta     $802113
+
+        lda     reg_scroll_v_bg4.lo
+        sta     $802114
+        lda     reg_scroll_v_bg4.hi
+        sta     $802114
+    .bend
+
+    
 
     ; finish
 _finish
@@ -484,21 +515,18 @@ framediff        .word   ?
 reg_mosaic      .byte   ?
 reg_brightness  .byte   ?   ; [0-15]
 
-player_x_pos        .byte   ?
-player_y_pos        .byte   ?
+reg_scroll_h_bg1    .dunion HLWord
+reg_scroll_v_bg1    .dunion HLWord
+reg_scroll_h_bg2    .dunion HLWord
+reg_scroll_v_bg2    .dunion HLWord
+reg_scroll_h_bg3    .dunion HLWord
+reg_scroll_v_bg3    .dunion HLWord
+reg_scroll_h_bg4    .dunion HLWord
+reg_scroll_v_bg4    .dunion HLWord
 
-player2_x_pos        .byte   ?
-player2_y_pos        .byte   ?
-
-vblank_ptr      .dunion HLWord
 gamestate_ptr   .dunion HLWord
-screen_fx_ptr   .dunion HLWord
-
-scroll_v_bg     .dunion HLWord
-scroll_h_bg     .dunion HLWord
-
-scroll_v_fg     .dunion HLWord
-scroll_h_fg     .dunion HLWord
+vblank_ptr      .dunion HLWord
+vfx_ptr         .dunion HLWord
 
 NMIReadyNF    .byte   ?
 
