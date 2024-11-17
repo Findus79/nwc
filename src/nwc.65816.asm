@@ -118,6 +118,9 @@ pad_1_repeat        .word   ?
 pad_2_repeat        .word   ?
 pad_3_repeat        .word   ?
 
+; player
+player_one          .dstruct Object
+
 ; place hdma stuff
 * = $7e4000
 hdma_scroll_a       .dunion HLWord
@@ -265,7 +268,8 @@ hdma_scroll_b       .dunion HLWord
     SpritePalette   .binary "../data/Sprites/Sprites.palette"
     SpriteTiles     .binary "../data/Sprites/Sprites.tiles"
 
-    PlayerSprite    .binary "../data/Sprites/Player.metasprite"
+    PlayerSF        .binary "../data/Sprites/Player_SF.metasprite"
+    PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
     Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
 .send
 
@@ -316,7 +320,9 @@ ScreenPosition .struct
 Object .struct
     worldpos    .dstruct    WorldPosition
     screenpos   .dstruct    ScreenPosition
+    speed       .byte       ?
 .ends
+
 
 Bullet .struct
     .block

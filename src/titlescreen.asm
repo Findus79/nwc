@@ -197,8 +197,11 @@ Titlescreen_OnEnter
     lda     #%00000011  ; obj | bg4 | bg3 | bg2 | bg1
     sta     $80212C
 
-    ; clear sprite OAM
-    ;jsr     ShadowOAM_Clear
+    ; load/play music
+    #AXY16
+    lda     #<>music_1
+	ldx     #`music_1
+	jsl     SPC_Play_Song
 
     ; reset scrolling registers
     stz     $80210e ; bg1

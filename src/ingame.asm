@@ -253,49 +253,60 @@ Ingame_OnEnter
         ply ; pop index
     .bend
 
-    #A8
-    ; setup bg mode
-    lda     #$01        ; set screen mode 1 (4/4/2 bpp)
-    sta     $802105
+    .block ; setup ppu
+        #A8
+        ; setup bg mode
+        lda     #$01        ; set screen mode 1 (4/4/2 bpp)
+        sta     $802105
 
-    ; setup tile data for bg1/2 (starts at $0000)
-    lda     #%00000000  ; 4 bits for each layer
-    sta     $80210B
+        ; setup tile data for bg1/2 (starts at $0000)
+        lda     #%00000000  ; 4 bits for each layer
+        sta     $80210B
 
-    ; setup bg map addresses
-    lda     #%01000010  ; bg1: 32x64 @ 4000/2000
-    sta     $802107     ;
+        ; setup bg map addresses
+        lda     #%01000010  ; bg1: 32x64 @ 4000/2000
+        sta     $802107     ;
 
-    lda     #%01001010  ; bg2: 32x64 @ 5600/2800
-    sta     $802108     ;
+        lda     #%01001010  ; bg2: 32x64 @ 5600/2800
+        sta     $802108     ;
 
-    ; setup sprite mode and address
-    lda     #%00000001
-    sta     $802101
+        ; setup sprite mode and address
+        lda     #%00000001
+        sta     $802101
 
-    ; init layers (main)
-    lda     #%00010010  ; obj | bg4 | bg3 | bg2 | bg1
-    sta     $80212C
-    ; init layers (sub)
-    lda     #%00000001
-    sta     $80212D
+        ; init layers (main)
+        lda     #%00010010  ; obj | bg4 | bg3 | bg2 | bg1
+        sta     $80212C
+        ; init layers (sub)
+        lda     #%00000001
+        sta     $80212D
 
-    ; setup color math
-    lda     #%00000010
-    sta     $802130         ; cgwsel
+        ; setup color math
+        lda     #%00000010
+        sta     $802130         ; cgwsel
 
-    lda     #%01000011
-    sta     $802131         ; cgadsub
+        lda     #%01000011
+        sta     $802131         ; cgadsub
 
-    lda     #$0e
-    sta     $802132         ; coldata
-
+        lda     #$0e
+        sta     $802132         ; coldata
+    .bend
     ; clear sprite OAM
     ;jsr     ShadowOAM_Clear
 
     #A16
     ; reset scrolling registers
-    
+
+    ; setup player data
+    #A16
+    lda     #116
+    sta     player_one.screenpos.x
+    lda     #160
+    sta     player_one.screenpos.y
+    #A8
+    lda     #2
+    sta     player_one.speed
+        
 
     #A8
     stz     reg_brightness
@@ -334,6 +345,37 @@ Ingame_OnEnter
 Ingame_Loop
     ; scroll backgrounds
     .block  ; handle input
+        #A16
+        jsr     PAD_READ
+        _move_left
+            lda     pad_1_repeat
+            and     #PAD_LEFT
+            beq     _move_right
+
+            jsr     MovePlayer_Left
+
+        _move_right
+            lda     pad_1_repeat
+            and     #PAD_RIGHT
+            beq     _move_up
+
+            jsr     MovePlayer_Right
+
+        _move_up
+            lda     pad_1_repeat
+            and     #PAD_UP
+            beq     _move_down
+
+            jsr     MovePlayer_Up
+
+        _move_down
+            lda     pad_1_repeat
+            and     #PAD_DOWN
+            beq     _input_done
+
+            jsr     MovePlayer_Down
+        
+        _input_done
     .bend
 
     .block  ; sprite loop
@@ -343,11 +385,54 @@ Ingame_Loop
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
         ;SetMetasprite Enemy_0, player_x_pos, player_y_pos
-        ;SetMetasprite PlayerSprite, player2_x_pos, player2_y_pos
+        SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
     .bend
 
     _done
         rts
+
+MovePlayer_Left
+    #A16
+    clc
+    lda     player_one.screenpos.x
+    dec     A
+    bmi     _done
+    sta     player_one.screenpos.x
+
+    _done
+    rts
+
+MovePlayer_Right
+    #A16
+    clc
+    lda     player_one.screenpos.x
+    inc     A
+    cmp     #233
+    beq     _done
+    sta     player_one.screenpos.x
+    _done
+    rts
+
+MovePlayer_Up
+    #A16
+    clc
+    lda     player_one.screenpos.y
+    dec     A
+    bmi     _done
+    sta     player_one.screenpos.y
+    _done
+    rts
+
+MovePlayer_Down
+    #A16
+    clc
+    lda     player_one.screenpos.y
+    inc     A
+    cmp     #200
+    beq     _done
+    sta     player_one.screenpos.y
+    _done
+    rts
 
 Ingame_FadeIn
     .block
@@ -393,22 +478,30 @@ Ingame_FadeOut
 
 Ingame_VBlank
     phb
+        _scrolling
+
         .block ; scroll bg/fg
             #A16
+            lda     current_frame
+            and     #1
+            bne     _skip
+
             lda     reg_scroll_v_bg2
             dec     A
             and     #%0000000111111111
             sta     reg_scroll_v_bg2
 
+            clc
             lda     reg_scroll_v_bg1
-            dec     A
-            dec     A
+            sbc     #3
             and     #%0000000111111111
             sta     reg_scroll_v_bg1
             
+            _skip
             #A8
         .bend
         
+        _sprites
         #AXY8
             jsr DMA_OAM
     plb
