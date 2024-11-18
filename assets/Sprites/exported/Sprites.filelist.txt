@@ -2,3 +2,4 @@ Sprites.png
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.MainSprite.layer-Player_NW.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.MainSprite.layer-Player_SF.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.spr_gingerbreadman.layer-Layer 1.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.snowball.layer-snowball.map001.json

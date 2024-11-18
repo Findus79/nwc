@@ -198,10 +198,10 @@ Titlescreen_OnEnter
     sta     $80212C
 
     ; load/play music
-    #AXY16
-    lda     #<>music_1
-	ldx     #`music_1
-	jsl     SPC_Play_Song
+    ; #AXY16
+    ; lda     #<>music_1
+	; ldx     #`music_1
+	; jsl     SPC_Play_Song
 
     ; reset scrolling registers
     stz     $80210e ; bg1

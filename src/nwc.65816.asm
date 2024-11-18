@@ -118,8 +118,11 @@ pad_1_repeat        .word   ?
 pad_2_repeat        .word   ?
 pad_3_repeat        .word   ?
 
-; player
+; player data
 player_one          .dstruct Object
+player_bullets .block   ; 32 bullets for the player at once for now.
+    .fill   32*5        ; 9 bytes per bullet
+.bend
 
 ; place hdma stuff
 * = $7e4000
@@ -270,6 +273,7 @@ hdma_scroll_b       .dunion HLWord
 
     PlayerSF        .binary "../data/Sprites/Player_SF.metasprite"
     PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
+    Snowball        .binary "../data/Sprites/snowball.metasprite"
     Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
 .send
 
@@ -324,10 +328,9 @@ Object .struct
 .ends
 
 
-Bullet .struct
+Bullet .struct  ; 5 bytes total
     .block
         flags       .byte       ?
-        worldpos    .dstruct    WorldPosition
         screenpos   .dstruct    ScreenPosition
     .bend
 .ends

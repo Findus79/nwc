@@ -303,9 +303,27 @@ Ingame_OnEnter
     sta     player_one.screenpos.x
     lda     #160
     sta     player_one.screenpos.y
+    
     #A8
+    lda     #0
+    sta     next_bullet
+
     lda     #2
     sta     player_one.speed
+
+    ; clear all player bullets
+    .block; clear bullets
+        #A8
+        lda     #0;
+        #XY16
+        ldx     #(32*5)
+        _loop
+            sta player_bullets,x
+            dex
+            bne _loop
+        ; clear last element
+        sta player_bullets,X
+    .bend
         
 
     #A8
@@ -371,9 +389,16 @@ Ingame_Loop
         _move_down
             lda     pad_1_repeat
             and     #PAD_DOWN
-            beq     _input_done
+            beq     _shoot_snowball
 
             jsr     MovePlayer_Down
+
+        _shoot_snowball
+            lda     pad_1_pressed
+            and     #PAD_Y
+            beq     _input_done
+
+            jsr     ShootSnowball
         
         _input_done
     .bend
@@ -382,10 +407,70 @@ Ingame_Loop
         #A16
         jsr     ShadowOAM_Clear
 
+        ; collision detection
+
+        ; scoring
+
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
-        ;SetMetasprite Enemy_0, player_x_pos, player_y_pos
+        ; draw player sprite
+        phx
         SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
+        plx
+        
+        ; handle/bullets
+        .block ; player bullet update
+            
+            ldx #(31*5)             ; start with last bullet
+
+            _bullet_loop
+                #A8
+                lda player_bullets,X    ; load bullet flags
+                bit BULLET_IN_USE       ; 
+                beq _next_bullet      ; next/prev. bullet
+
+                _update_bullet
+                    #A16
+                    clc
+                    lda     player_bullets,X+3     ; load screenpos.y
+                    sbc     BULLET_SPEED
+                    sta     player_bullets,X+3     ; store new screenpos.y
+
+                _check_offscreen
+                    bpl     _move_bullet
+                
+                _remove_bullet
+                    #A8
+                    lda     #0
+                    sta     player_bullets,X
+                    jmp     _next_bullet      
+                
+                _move_bullet              
+                    #A16
+                    lda     player_bullets,X+1      ; load x position
+                    sta     sprite_pos_x
+
+                    lda     player_bullets,X+3      ; load y position
+                    sta     sprite_pos_y
+                                        
+                    phx
+                        SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
+                    plx
+
+                _next_bullet
+                    #A16
+                    txa                 ; get current index
+                    beq _done           ; if 0 this was the last bullet to check --> done
+
+                    sec
+                    sbc #5              ; substract
+                    tax
+                    jmp _bullet_loop    ; next bullet
+            _done
+        .bend
+        
+        #A8
+        ; draw current enemy wave objects
     .bend
 
     _done
@@ -434,6 +519,50 @@ MovePlayer_Down
     _done
     rts
 
+
+ShootSnowball
+    .block
+        #A8
+        lda     next_bullet
+        tax
+        
+        lda     player_bullets,X
+        ora     BULLET_IN_USE
+        sta     player_bullets,X
+        
+        #A16
+        lda     player_one.screenpos.x
+        clc
+        adc     #8
+        sta     player_bullets,X+1
+        
+        clc
+        lda     player_one.screenpos.y
+        sta     player_bullets,X+3
+
+        #A8
+        lda     next_bullet
+        clc
+        adc     #5
+        cmp     #(32*5)
+        bne     _next_bullet
+
+        lda     #0
+        sta     next_bullet
+        jmp     _done
+
+        _next_bullet
+            sta next_bullet
+
+        _done
+    .bend
+    rts
+
+
+
+
+
+
 Ingame_FadeIn
     .block
         #A16
@@ -466,15 +595,41 @@ Ingame_FadeIn
             lda     #%00001111
             sta     reg_mosaic
             #A16
-            lda     #<>Ingame_Loop
+            lda     #<>Ingame_MovePlayerToStartingPosition
             sta     gamestate_ptr
-
+            ; set player pos and move him onscreen
+            lda     #223
+            sta     player_one.screenpos.y
         _done
     .bend
     rts
 
 Ingame_FadeOut
     rts
+
+Ingame_MovePlayerToStartingPosition
+    .block
+        #A16
+        clc
+        lda     player_one.screenpos.y
+        dec     A
+        sta     player_one.screenpos.y
+        cmp     #160
+        bne     _done
+
+        lda     #<>Ingame_Loop
+        sta     gamestate_ptr
+
+        _done
+            #A8
+            jsr     SetOAMPtr   ; clear sprite shadow table
+            ; draw player sprite
+            phx
+            SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
+            ply
+    .bend
+    rts
+
 
 Ingame_VBlank
     phb

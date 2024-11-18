@@ -150,13 +150,13 @@ InitSNESAndMirror
     stz     NMIReadyNF
 
     ; load audio driver
-    #AXY16
-    lda     #<>spc700_code
-    ldx     #`spc700_code
-    jsl     SPC_Init
-    lda 	#1
-    jsl     SPC_Stereo
-    #A8
+    ; #AXY16
+    ; lda     #<>spc700_code
+    ; ldx     #`spc700_code
+    ; jsl     SPC_Init
+    ; lda 	#1
+    ; jsl     SPC_Stereo
+    ; #A8
 
     cli
 
@@ -546,5 +546,8 @@ sprite_bank         .byte   ?
 oam_ptr             .word   ?
 oam_bank            .byte   ?
 oam_offset          .word   ?
+
+; player bullet handling
+next_bullet         .byte   ?
 
 .send
