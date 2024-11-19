@@ -414,9 +414,7 @@ Ingame_Loop
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
         ; draw player sprite
-        phx
         SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
-        plx
         
         ; handle/bullets
         .block ; player bullet update
@@ -453,10 +451,8 @@ Ingame_Loop
                     lda     player_bullets,X+3      ; load y position
                     sta     sprite_pos_y
                                         
-                    phx
-                        SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
-                    plx
-
+                    SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
+                    
                 _next_bullet
                     #A16
                     txa                 ; get current index
@@ -610,6 +606,8 @@ Ingame_FadeOut
 Ingame_MovePlayerToStartingPosition
     .block
         #A16
+        jsr     ShadowOAM_Clear
+        
         clc
         lda     player_one.screenpos.y
         dec     A
@@ -624,9 +622,7 @@ Ingame_MovePlayerToStartingPosition
             #A8
             jsr     SetOAMPtr   ; clear sprite shadow table
             ; draw player sprite
-            phx
             SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
-            ply
     .bend
     rts
 

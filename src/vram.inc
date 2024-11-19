@@ -22,15 +22,22 @@ LoadVRAM .macro     ; // 1 src, 2 dst, 3 size
 
 ; place metasprite at given position
 SetMetasprite .macro    ; 1 src metasprite, x pos, y pos
-    #A8     
-    lda     #`\1        ; load src sprite bank
-    sta     tmp_0
-    #A16
-    lda     \2          ; load x pos to x
-    tax
-    lda     \3          ; load y pos to y
-    tay
-    lda     #<>\1    
+    #A8
+    pha
+    phx
+    phy
+        lda     #`\1        ; load src sprite bank
+        sta     tmp_0
+        #A16
+        lda     \2          ; load x pos to x
+        tax
+        lda     \3          ; load y pos to y
+        tay
+        lda     #<>\1    
 
-    jsr     CopyMetasprite
+        jsr     CopyMetasprite
+    #A8
+    ply
+    plx
+    pla
 .endmacro
