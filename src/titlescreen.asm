@@ -177,47 +177,159 @@ Titlescreen_OnEnter
         ;plb
     .bend
 
-    #AXY8
-    ; setup bg mode
-    lda     #$01        ; set screen mode 1 (4/4/2 bpp)
-    sta     $802105
-
-    ; setup tile data for bg1/2 (starts at $0000)
-    lda     #%00000000  ; 4 bits for each layer
-    sta     $80210B
-
-    ; setup bg map addresses
-    lda     #%00100001  ; bg1: 32x32 @ 4000/2000
-    sta     $802107     ;
-
-    lda     #%00101000  ; bg2: 32x32 @ 5600/2800
-    sta     $802108     ;
-
-    ; init layers
-    lda     #%00000011  ; obj | bg4 | bg3 | bg2 | bg1
-    sta     $80212C
-
-    ; load/play music
-    ; #AXY16
-    ; lda     #<>music_1
-	; ldx     #`music_1
-	; jsl     SPC_Play_Song
-
-    ; reset scrolling registers
-    stz     $80210e ; bg1
-    stz     $80210e
-
-    ; scroll bg 1 pixel.
+    ; load sprite data
+    ; set data_ptr
     #A8
-    lda     #$FF
-    sta     reg_scroll_v_bg2.lo
+    lda     #`TitlescreenSpriteData
+    sta     data_bnk
+    #A16
+    lda     #<>TitlescreenSpriteData
+    sta     data_ptr
 
-    ; init mosaic
-    lda     #%11111111
-    sta     reg_mosaic
-    sta     $802106
+    ; init table index
+    #XY16
+    ldy     #0
 
-    stz     reg_brightness
+    .block  ; load sprite data
+        ; palette first
+        #A8
+        lda     [data_ptr], y   ; load palette data bank
+        sta     src_bank
+        iny
+
+        #A16
+        lda     [data_ptr], y   ; load palette data address
+        sta     src_address 
+        iny
+        iny     ; 2 bytes
+
+        lda     [data_ptr], y   ; load palette size
+        sta     src_size
+        iny
+        iny
+
+        phy     ; push index
+            #A8
+            lda     #128        ; palette index offset (in bytes)
+            sta     $802121     ;
+            lda     src_bank
+            ldx     src_address
+            ldy     src_size
+
+            jsr     DMA_Palette
+        ply     ; pop index
+    
+        ; sprite tiles
+        #A8
+        lda     [data_ptr], y   ; load tiles data bank
+        sta     src_bank
+        iny
+
+        #A16
+        lda     [data_ptr], y   ; load tiles data address
+        sta     src_address
+        iny
+        iny
+
+        lda     [data_ptr], y   ; load tiles data size
+        sta     src_size
+        iny
+        iny
+
+        phy ; push index
+            #A8
+            #XY8
+            lda     #$80
+            sta     $802115 ; set vram transfer
+
+            #XY16
+            ldx     #$4000  ; at start of vram
+            stx     $802116 ;
+
+            lda     src_bank
+            ldx     src_address
+            ldy     src_size
+
+            jsr     DMA_VRAM
+        ply ; pop index
+    .bend
+
+    ; setup ppu
+    .block
+        #AXY8
+        ; setup bg mode
+        lda     #$01        ; set screen mode 1 (4/4/2 bpp)
+        sta     $802105
+
+        ; setup tile data for bg1/2 (starts at $0000)
+        lda     #%00000000  ; 4 bits for each layer
+        sta     $80210B
+
+        ; setup bg map addresses
+        lda     #%00100001  ; bg1: 32x32 @ 4000/2000
+        sta     $802107     ;
+
+        lda     #%00101000  ; bg2: 32x32 @ 5600/2800
+        sta     $802108     ;
+
+        ; setup sprite mode and address
+        lda     #%00000000
+        sta     $802101
+
+        ; init layers
+        lda     #%00010011  ; obj | bg4 | bg3 | bg2 | bg1
+        sta     $80212C
+
+        ; load/play music
+        ; #AXY16
+        ; lda     #<>music_1
+        ; ldx     #`music_1
+        ; jsl     SPC_Play_Song
+
+        ; scroll bg 1 pixel.
+        #A8
+        lda     #$FF
+        sta     reg_scroll_v_bg2.lo
+
+        ; init mosaic
+        lda     #%11111111
+        sta     reg_mosaic
+        sta     $802106
+
+        stz     reg_brightness
+    .bend
+
+    ; clear all sprites
+    jsr     ShadowOAM_Clear
+
+    ; clear snowflake/bullet data
+    #A8
+    lda     #0
+    sta     next_bullet
+
+    ; clear all player bullets
+    .block; clear bullets
+        #A8
+        lda     #0;
+        #XY16
+        ldx     #(32*5)
+        _loop
+            sta player_bullets,x
+            dex
+            bne _loop
+        ; clear last element
+        sta player_bullets,X
+    .bend
+
+    ; init initial player selection
+    #A16
+    lda     #$100
+    sta     reg_scroll_h_bg1
+    lda     #<>PlayerNW
+    sta     playersprite_addr
+    #A8
+    lda     #`PlayerNW
+    sta     playersprite_bank
 
     .block ; init hdma table
         #A8
@@ -259,9 +371,9 @@ Titlescreen_OnEnter
 
 Titlescreen_Main
     .block
-        #AXY16
+        #A16
         .block  ; handle input
-            jsr     PAD_READ
+            clc
             lda     pad_1_pressed
             and     #PAD_START
             bne     _exit
@@ -276,6 +388,11 @@ Titlescreen_Main
             and     #PAD_RIGHT
             bne     _scroll_logo_right
 
+            clc
+            lda     pad_1_pressed
+            and     #PAD_A
+            bne     _create_snowflake
+
             jmp     _done
 
             _scroll_logo_left
@@ -288,6 +405,10 @@ Titlescreen_Main
                 sta     gamestate_ptr
                 jmp     _done
 
+            _create_snowflake
+                jsr     Titlescreen_CreateSnowflake
+                jmp     _done
+
             _exit
                 lda     #<>Titlescreen_FadeOut
                 sta     gamestate_ptr
@@ -295,13 +416,98 @@ Titlescreen_Main
             _done
         .bend
 
-        .block  ; handle snowflake sprites
-        .bend;
+        ; .block  ; handle snowflake sprites
+        ;     #A16
+        ;     jsr     ShadowOAM_Clear
+
+        ;     ldx #(31*5)             ; start with last bullet/snowflake
+
+        ;     _bullet_loop
+        ;         #A8
+        ;         lda     player_bullets,X    ; load bullet flags
+        ;         bit     BULLET_IN_USE       ; 
+        ;         beq     _next_bullet        ; next/prev. bullet
+
+        ;         _update_bullet
+        ;             #A16
+        ;             clc
+        ;             lda     player_bullets,X+3     ; load screenpos.y
+        ;             adc     BULLET_SPEED
+        ;             sta     player_bullets,X+3     ; store new screenpos.y
+
+        ;         ; _check_offscreen
+        ;         ;     bpl     _move_bullet
+                
+        ;         ; _remove_bullet
+        ;         ;     #A8
+        ;         ;     lda     #0
+        ;         ;     sta     player_bullets,X
+        ;         ;     jmp     _next_bullet      
+                
+        ;         _write_bullet              
+        ;             #A16
+        ;             lda     player_bullets,X+1      ; load x position
+        ;             sta     sprite_pos_x
+
+        ;             lda     player_bullets,X+3      ; load y position
+        ;             sta     sprite_pos_y
+                                        
+        ;             SetMetasprite   snowflake_medium_a, sprite_pos_x, sprite_pos_y
+                    
+        ;         _next_bullet
+        ;             #A16
+        ;             txa                 ; get current index
+        ;             beq _done           ; if 0 this was the last bullet to check --> done
+
+        ;             sec
+        ;             sbc #5              ; substract
+        ;             tax
+        ;             jmp _bullet_loop    ; next bullet
+        ;     _done
+        ; .bend;
         #AXY8
     .bend
 
     _done
         rts
+
+Titlescreen_CreateSnowflake
+    ; add a random snowflake (x random y top)
+    ; .block
+    ;     #A8
+    ;     lda     next_bullet
+    ;     tax
+        
+    ;     lda     player_bullets,X
+    ;     ora     BULLET_IN_USE
+    ;     sta     player_bullets,X
+        
+    ;     #A16
+    ;     lda     current_frame
+    ;     and     #128
+    ;     sta     player_bullets,X+1
+        
+    ;     clc
+    ;     lda     #16
+    ;     sta     player_bullets,X+3
+
+    ;     #A8
+    ;     lda     next_bullet
+    ;     clc
+    ;     adc     #5
+    ;     cmp     #(32*5)
+    ;     bne     _next_bullet
+
+    ;     lda     #0
+    ;     sta     next_bullet
+    ;     jmp     _done
+
+    ;     _next_bullet
+    ;         sta next_bullet
+
+    ;     _done
+    ; .bend
+    rts
 
 Titlescreen_LogoLeft
     #A16
@@ -320,6 +526,7 @@ Titlescreen_LogoLeft
         lda     #<>Titlescreen_Main
         sta     gamestate_ptr
 
+        
     _done
     rts
 
@@ -434,6 +641,20 @@ Titlescreen_VBlank
             
             _done
         .bend
+
+        ; disable h-dma for oam update?
+        ; disable dma
+        stz     $80420C
+
+        ; update sprites
+        #AXY8
+        jsr DMA_OAM
+
+        ; re-enable h-dma
+        lda     #%00001000      ; channel 1
+        sta     $80420C         ; $420c
+
+        jsr     PAD_READ
     plb
     rts
 

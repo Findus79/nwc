@@ -10,8 +10,11 @@ GS_INGAME      = %00000010
 ; bullet flags
 BULLET_IN_USE       = #%10000000
 BULLET_EXPLODING    = #%01000000
+BULLET_SPEED        = #2
 
-BULLET_SPEED    = #2
+; enemy flags
+ENEMY_ALIVE         = #%10000000
+ENEMY_EXPLODE       = #%01000000
 
 
 PAD_B       = $8000

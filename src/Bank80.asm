@@ -262,7 +262,7 @@ PAD_READ
     and     #$01        ; check if pad is ready
     bne     PAD_READ
 
-    rep     #$30        ; all registers set to 16bit.
+    #AXY16
 
     ; player one
     ldx     #$00
@@ -539,6 +539,9 @@ wtmp_1              .word   ?
 
 sprite_pos_x        .byte   ?
 sprite_pos_y        .byte   ?
+
+playersprite_bank   .byte   ?
+playersprite_addr   .word   ?
 
 sprite_address      .word   ?
 sprite_bank         .byte   ?

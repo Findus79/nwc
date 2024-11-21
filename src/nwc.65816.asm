@@ -124,6 +124,10 @@ player_bullets .block   ; 32 bullets for the player at once for now.
     .fill   32*5        ; 9 bytes per bullet
 .bend
 
+enemy_objects .block
+    .fill   16*11        ; max of 16 enemies at once
+.bend
+
 ; place hdma stuff
 * = $7e4000
 hdma_scroll_a       .dunion HLWord
@@ -144,7 +148,7 @@ hdma_scroll_b       .dunion HLWord
 .cerror * != $80ffd5, "name is short", *
     .byte   $30     ; mapping
     .byte   $00     ; rom
-    .byte   $10     ; 128K
+    .byte   $09     ; 128K
     .byte   $00     ; 0K SRAM
     .byte   $01     ; PAL
     .byte   $33     ; version 3
@@ -228,6 +232,17 @@ hdma_scroll_b       .dunion HLWord
         .word   len(binary("../data/Titlescreen/Background.map"))
     .bend
 
+    TitlescreenSpriteData
+    .block
+        .byte   `TitlescreenSpritePalette
+        .word   <>TitlescreenSpritePalette
+        .word   len(binary("../data/Sprites/Sprites.palette"))
+
+        .byte   `TitlescreenSpriteTiles
+        .word   <>TitlescreenSpriteTiles
+        .word   len(binary("../data/Sprites/Sprites.tiles"))
+    .bend
+
     IngameData
     .block
         .byte   `IngamePalette
@@ -247,14 +262,14 @@ hdma_scroll_b       .dunion HLWord
         .word   len(binary("../data/Ingame/Background.map"))
     .bend
 
-    SpriteData
+    IngameSpriteData
     .block
-        .byte   `SpritePalette
-        .word   <>SpritePalette
+        .byte   `IngameSpritePalette
+        .word   <>IngameSpritePalette
         .word   len(binary("../data/Sprites/Sprites.palette"))
 
-        .byte   `SpriteTiles
-        .word   <>SpriteTiles
+        .byte   `IngameSpriteTiles
+        .word   <>IngameSpriteTiles
         .word   len(binary("../data/Sprites/Sprites.tiles"))
     .bend
 
@@ -263,26 +278,137 @@ hdma_scroll_b       .dunion HLWord
     TitlescreenMap_BG   .binary "../data/Titlescreen/Background.map"
     TitlescreenMap_FG   .binary "../data/Titlescreen/Foreground.map"
 
+    TitlescreenSpritePalette   .binary "../data/Sprites/snowflakes.palette"
+    TitlescreenSpriteTiles     .binary "../data/Sprites/snowflakes.tiles"
+
+    snowflake_small_a   .binary "../data/Sprites/snowflake_small_a.metasprite"
+    snowflake_medium_a  .binary "../data/Sprites/snowflake_medium_a.metasprite"
+
     IngamePalette   .binary "../data/Ingame/Ingame.palette"
     IngameTiles     .binary "../data/Ingame/Foreground.tiles"
     IngameMap_BG    .binary "../data/Ingame/Background.map"
     IngameMap_FG    .binary "../data/Ingame/Foreground.map"
 
-    SpritePalette   .binary "../data/Sprites/Sprites.palette"
-    SpriteTiles     .binary "../data/Sprites/Sprites.tiles"
+    IngameSpritePalette   .binary "../data/Sprites/Sprites.palette"
+    IngameSpriteTiles     .binary "../data/Sprites/Sprites.tiles"
 
     PlayerSF        .binary "../data/Sprites/Player_SF.metasprite"
     PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
     Snowball        .binary "../data/Sprites/snowball.metasprite"
-    Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
+
+    Wavetable .block    ; all waves defs have to be stored in the same bank
+        .byte   `Wave_Definitions  ; wave-defs bank
+        .word   <>Wave_1           ; wave-def addr
+        .word   <>Wave_2
+        .word   <>Wave_3
+        .word   <>Wave_4
+        .word   <>Wave_5
+        .word   <>Wave_6
+        .word   <>Wave_7
+        .word   <>Wave_8
+        .word   <>Wave_9
+        .word   <>Wave_10
+        .word   <>Wave_11
+        .word   <>Wave_12
+        .word   <>Wave_13
+        .word   <>Wave_14
+        .word   <>Wave_15
+        .word   <>Wave_16
+        .word   <>Wave_17
+        .word   <>Wave_18
+        .word   <>Wave_19
+        .word   <>Wave_20
+        .word   <>Wave_21
+        .word   <>Wave_22
+        .word   <>Wave_23
+        .word   <>Wave_24
+    .bend
+
+    EnemyTable .block
+        .byte   `Enemy_Sprites
+        .word   <>Enemy_0
+        .word   <>Enemy_1
+    .bend
+
+    PatternTable .block
+        .byte   `Pattern_Definitions
+        .word   <>Pattern_0
+        .word   <>Pattern_1
+    .bend
+
 .send
 
 .section secBank82
-    spc700_code     .binary "../data/Music/spc700.bin"
+    Enemy_Sprites
+        Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
+        Enemy_1         .binary "../data/Sprites/ufo_elf.metasprite"
 .send
 
 .section secBank83
-    music_1         .binary "../data/Music/music_1.bin"
+    ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
+    Wave_Definitions
+    Wave_1  .block
+        .byte   5           ; enemy count
+
+        .byte   1           ; enemy type
+        .byte   32, 225     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   $0010       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   64, 225     ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $0020       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   96, 225     ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $0030       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   128, 225    ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $0040       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   160, 225    ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $0050       ; frame offset until start
+    .bend
+    Wave_2
+    Wave_3
+    Wave_4
+    Wave_5
+    Wave_6
+    Wave_7
+    Wave_8
+    Wave_9
+    Wave_10
+    Wave_11
+    Wave_12
+    Wave_13
+    Wave_14
+    Wave_15
+    Wave_16
+    Wave_17
+    Wave_18
+    Wave_19
+    Wave_20
+    Wave_21
+    Wave_22
+    Wave_23
+    Wave_24
+
+    ; pattern definitions.
+    ; 16 bit length, n x/y pairs.
+    Pattern_Definitions
+        Pattern_0 .block
+            .word   $0001   ; xx yy
+        .bend
+        Pattern_1 .block
+            .word   $0101   ; xx yy
+        .bend
+
 .send
 
 ; useful definitions from Oziphantom
@@ -333,6 +459,14 @@ Bullet .struct  ; 5 bytes total
         flags       .byte       ?
         screenpos   .dstruct    ScreenPosition
     .bend
+.ends
+
+Enemy .struct   ; 11 bytes total
+    flags           .byte       ?
+    screenpos       .dstruct    ScreenPosition
+    sprite_ptr      .word       ?               ; metasprite ptr
+    pattern_ptr     .word       ?               ; wave-pattern ptr
+    pattern_index   .word       ?               ; index into wave-pattern (aka "animation" position)
 .ends
 
 .comment

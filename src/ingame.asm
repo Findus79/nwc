@@ -179,10 +179,10 @@ Ingame_OnEnter
     ; load sprite data
     ; set data_ptr
     #A8
-    lda     #`SpriteData
+    lda     #`IngameSpriteData
     sta     data_bnk
     #A16
-    lda     #<>SpriteData
+    lda     #<>IngameSpriteData
     sta     data_ptr
 
     ; init table index
@@ -291,9 +291,7 @@ Ingame_OnEnter
         lda     #$0e
         sta     $802132         ; coldata
     .bend
-    ; clear sprite OAM
-    ;jsr     ShadowOAM_Clear
-
+    
     #A16
     ; reset scrolling registers
 
@@ -324,6 +322,32 @@ Ingame_OnEnter
         ; clear last element
         sta player_bullets,X
     .bend
+
+    .block; clear enemy objects
+        #A8
+        lda     #0
+        #XY16
+        ldx     #(16*11)
+        _loop
+            sta enemy_objects,X
+            dex
+            bne _loop
+        ; clear last element
+        sta enemy_objects,X
+    .bend
+
+    #A8
+    ldx     #0
+    lda     enemy_objects,X
+    ora     ENEMY_ALIVE
+    sta     enemy_objects,X
+    #A16
+    lda     #128
+    sta     enemy_objects,X+1
+    sta     enemy_objects,X+3
+
+    ; clear all sprites
+    jsr     ShadowOAM_Clear
         
 
     #A8
@@ -364,7 +388,6 @@ Ingame_Loop
     ; scroll backgrounds
     .block  ; handle input
         #A16
-        jsr     PAD_READ
         _move_left
             lda     pad_1_repeat
             and     #PAD_LEFT
@@ -414,7 +437,7 @@ Ingame_Loop
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
         ; draw player sprite
-        SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
+        SetMetasprite PlayerNW, player_one.screenpos.x, player_one.screenpos.y
         
         ; handle/bullets
         .block ; player bullet update
@@ -466,7 +489,51 @@ Ingame_Loop
         .bend
         
         #A8
-        ; draw current enemy wave objects
+        ; draw/update current enemy wave objects
+        .block ; enemy object update
+            
+            ldx #(15*11)             ; start with last enemy
+
+            _enemy_loop
+                #A8
+                lda enemy_objects,X     ; load flags
+                bit ENEMY_ALIVE         ; 
+                beq _next_enemy         ; next/prev. enemy
+
+                _update_enemy           ; update enemy according to current set wave pattern
+                    #A16
+                    ; clc
+                    ; lda     player_bullets,X+3     ; load screenpos.y
+                    ; sbc     BULLET_SPEED
+                    ; sta     player_bullets,X+3     ; store new screenpos.y
+
+                ; _remove_enemy
+                ;     #A8
+                ;     lda     #0
+                ;     sta     enemy_objects,X
+                ;     jmp     _next_enemy      
+                
+                _draw_enemy
+                    #A16
+                    lda     enemy_objects,X+1      ; load x position
+                    sta     sprite_pos_x
+
+                    lda     enemy_objects,X+3      ; load y position
+                    sta     sprite_pos_y
+                                        
+                    SetMetasprite   Enemy_1, sprite_pos_x, sprite_pos_y
+                    
+                _next_enemy
+                    #A16
+                    txa                 ; get current index
+                    beq _done           ; if 0 this was the last bullet to check --> done
+
+                    sec
+                    sbc #11              ; substract
+                    tax
+                    jmp _enemy_loop     ; next bullet
+            _done
+        .bend
     .bend
 
     _done
@@ -607,7 +674,7 @@ Ingame_MovePlayerToStartingPosition
     .block
         #A16
         jsr     ShadowOAM_Clear
-        
+
         clc
         lda     player_one.screenpos.y
         dec     A
@@ -622,8 +689,42 @@ Ingame_MovePlayerToStartingPosition
             #A8
             jsr     SetOAMPtr   ; clear sprite shadow table
             ; draw player sprite
-            SetMetasprite PlayerSF, player_one.screenpos.x, player_one.screenpos.y
+            SetMetasprite PlayerNW, player_one.screenpos.x, player_one.screenpos.y
     .bend
+    rts
+
+Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in A (8 bit)
+    #A8
+    pha
+        lda     Wavetable   ; load wavetable bank
+        sta     data_bnk
+    pla
+    ; calc index (A*2+1)
+    clc
+    asl A
+    inc A
+    tax     ; store index
+    ; now we can read the proper wave definition index
+    #A16
+    lda     Wavetable,X
+    sta     data_ptr
+    ; data_ptr/bank now points to the proper wave definition
+    ; load number of enemies (used as a loop counter)
+    #A8
+    lda     [data_ptr]
+    tax
+    _enemy_loop
+        phx
+            ldx     #1      ; init index to 1 (after the enemy count value)
+            ; enemy position (8-bit only) x and y
+
+            ; pattern index (8-bit)
+
+            ; frame offset until start of wave "playback"
+
+        ply
+        dex
+        bne     _enemy_loop
     rts
 
 
@@ -654,7 +755,10 @@ Ingame_VBlank
         
         _sprites
         #AXY8
-            jsr DMA_OAM
+            jsr     DMA_OAM
+
+        _input
+            jsr     PAD_READ
     plb
     rts
 
