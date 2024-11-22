@@ -336,15 +336,9 @@ Ingame_OnEnter
         sta enemy_objects,X
     .bend
 
-    #A8
-    ldx     #0
-    lda     enemy_objects,X
-    ora     ENEMY_ALIVE
-    sta     enemy_objects,X
-    #A16
-    lda     #128
-    sta     enemy_objects,X+1
-    sta     enemy_objects,X+3
+    ; load first wave definition
+    lda     #0
+    jsr     Ingame_LoadWave
 
     ; clear all sprites
     jsr     ShadowOAM_Clear
@@ -704,27 +698,70 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
     asl A
     inc A
     tax     ; store index
+    
     ; now we can read the proper wave definition index
     #A16
     lda     Wavetable,X
     sta     data_ptr
+    
     ; data_ptr/bank now points to the proper wave definition
     ; load number of enemies (used as a loop counter)
-    #A8
-    lda     [data_ptr]
-    tax
+    #A8XY16
+    lda     [data_ptr]      ; number of enemies in this wave def.
+    sta     tmp_0           ; store index for enemies in wave
+    
+    ldx     #0              ; x index for writing enemy table
+    ldy     #1              ; init index to 1 (after the enemy count value)
+
     _enemy_loop
-        phx
-            ldx     #1      ; init index to 1 (after the enemy count value)
-            ; enemy position (8-bit only) x and y
+        #A8
+        ; set enemy alive
+        lda     enemy_objects, X
+        ora     ENEMY_ALIVE
+        sta     enemy_objects, X
+        inx
 
-            ; pattern index (8-bit)
+        ; load enemy type
+        lda     [data_ptr], Y 
+        iny
+        
+        ; load enemy starting position
+        lda     [data_ptr], Y
+        sta     enemy_objects,X
+        inx
+        inx
+        iny     ; next
+        lda     [data_ptr], Y
+        sta     enemy_objects,X
+        inx
+        inx
+        iny     ; next
 
-            ; frame offset until start of wave "playback"
+        ; pattern index (8-bit)
+        lda     [data_ptr], Y
+        iny     ; next
 
-        ply
-        dex
+        ; frame offset until start of wave "playback"
+        #A16
+        lda     [data_ptr], y
+        iny     ; advance two bytes
+        iny     ;
+
+        inx
+        inx
+        inx
+        inx
+        inx
+        inx
+        
+        #A8
+        clc
+        lda     tmp_0
+        dec     A
+        sta     tmp_0
         bne     _enemy_loop
+    
+    #A8
     rts
 
 

@@ -148,7 +148,7 @@ hdma_scroll_b       .dunion HLWord
 .cerror * != $80ffd5, "name is short", *
     .byte   $30     ; mapping
     .byte   $00     ; rom
-    .byte   $09     ; 128K
+    .byte   $10     ; 128K
     .byte   $00     ; 0K SRAM
     .byte   $01     ; PAL
     .byte   $33     ; version 3
@@ -342,36 +342,35 @@ hdma_scroll_b       .dunion HLWord
     Enemy_Sprites
         Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
         Enemy_1         .binary "../data/Sprites/ufo_elf.metasprite"
-.send
 
-.section secBank83
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
     Wave_1  .block
         .byte   5           ; enemy count
 
         .byte   1           ; enemy type
-        .byte   32, 225     ; first enemy position x,y
+        .byte   32          ; first enemy position x,y
+        .byte   32     
         .byte   0           ; pattern index
         .word   $0010       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   64, 225     ; enemy position x,y
+        .byte   64, 32      ; enemy position x,y
         .byte   0           ; pattern index
         .word   $0020       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   96, 225     ; enemy position x,y
+        .byte   96, 32      ; enemy position x,y
         .byte   0           ; pattern index
         .word   $0030       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   128, 225    ; enemy position x,y
+        .byte   128, 32     ; enemy position x,y
         .byte   0           ; pattern index
         .word   $0040       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   160, 225    ; enemy position x,y
+        .byte   160, 32     ; enemy position x,y
         .byte   0           ; pattern index
         .word   $0050       ; frame offset until start
     .bend
