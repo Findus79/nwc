@@ -501,8 +501,11 @@ src_bank      .byte   ?
 src_size      .word   ?
 dst_address   .word   ?
 
-data_ptr      .word   ?
-data_bnk      .byte   ?
+; "pointers" for handling indirect copy stuff
+data_ptr    .word   ?
+data_bnk    .byte   ?
+data_ptr_0  .word   ?
+data_bnk_0  .byte   ?
 
 dma_transfer    .byte   ?
 
@@ -539,6 +542,7 @@ wtmp_1              .word   ?
 
 sprite_pos_x        .byte   ?
 sprite_pos_y        .byte   ?
+sprite_data_ptr     .word   ?
 
 playersprite_bank   .byte   ?
 playersprite_addr   .word   ?

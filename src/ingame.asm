@@ -314,7 +314,7 @@ Ingame_OnEnter
         #A8
         lda     #0;
         #XY16
-        ldx     #(32*5)
+        ldx     #(16*5)
         _loop
             sta player_bullets,x
             dex
@@ -327,7 +327,7 @@ Ingame_OnEnter
         #A8
         lda     #0
         #XY16
-        ldx     #(16*11)
+        ldx     #(16*13)
         _loop
             sta enemy_objects,X
             dex
@@ -436,7 +436,7 @@ Ingame_Loop
         ; handle/bullets
         .block ; player bullet update
             
-            ldx #(31*5)             ; start with last bullet
+            ldx #(15*5)             ; start with last bullet
 
             _bullet_loop
                 #A8
@@ -486,20 +486,35 @@ Ingame_Loop
         ; draw/update current enemy wave objects
         .block ; enemy object update
             
-            ldx #(15*11)             ; start with last enemy
+            ldx #(15*13)             ; start with last enemy
 
             _enemy_loop
                 #A8
-                lda enemy_objects,X     ; load flags
-                bit ENEMY_ALIVE         ; 
-                beq _next_enemy         ; next/prev. enemy
+                lda     enemy_objects,X     ; load flags
+                bit     ENEMY_ALIVE         ; skip if enemy is not alive
+                beq     _next_enemy         ; next/prev. enemy
 
-                _update_enemy           ; update enemy according to current set wave pattern
+                bit     ENEMY_WAITING       ; if enemy is waiting -> decrement frame counter
+                beq     _update_enemy       ; not waiting -> move
+
+                #A16
+                clc
+                lda     enemy_objects,X+11  ; load wait counter
+                dec     A                   ;
+                sta     enemy_objects,X+11  ; store decremented counter
+                bne     _next_enemy         ; not zero -> next enemy
+
+                #A8
+                lda     enemy_objects,X     ; load flags
+                and     UNSET_ENEMY_WAITING ; start it next frame
+                sta     enemy_objects,X     ; store new flags
+
+                _update_enemy               ; update enemy according to current set wave pattern
                     #A16
-                    ; clc
-                    ; lda     player_bullets,X+3     ; load screenpos.y
-                    ; sbc     BULLET_SPEED
-                    ; sta     player_bullets,X+3     ; store new screenpos.y
+                    clc
+                    lda     enemy_objects,X+3     ; load screenpos.y
+                    inc     A
+                    sta     enemy_objects,X+3     ; store new screenpos.y
 
                 ; _remove_enemy
                 ;     #A8
@@ -509,23 +524,45 @@ Ingame_Loop
                 
                 _draw_enemy
                     #A16
-                    lda     enemy_objects,X+1      ; load x position
+                    lda     enemy_objects,X+1       ; load x position
                     sta     sprite_pos_x
 
-                    lda     enemy_objects,X+3      ; load y position
+                    lda     enemy_objects,X+3       ; load y position
                     sta     sprite_pos_y
-                                        
-                    SetMetasprite   Enemy_1, sprite_pos_x, sprite_pos_y
-                    
+
+                    lda     enemy_objects,X+5       ; load sprite data ptr
+                    sta     sprite_data_ptr
+
+                    .block ; draw sprite 
+                        pha
+                        phx
+                        phy
+                            #A8
+                            lda     #`Enemy_Sprites    ; load src sprite bank
+                            sta     tmp_0
+                            #A16
+                            lda     sprite_pos_x          ; load x pos to x
+                            tax
+                            lda     sprite_pos_y          ; load y pos to y
+                            tay
+                            lda     sprite_data_ptr  
+
+                            jsr     CopyMetasprite     
+                        ply
+                        plx
+                        pla
+                        ;SetMetasprite   Enemy_1, sprite_pos_x, sprite_pos_y
+                    .bend
+
                 _next_enemy
                     #A16
                     txa                 ; get current index
-                    beq _done           ; if 0 this was the last bullet to check --> done
+                    beq _done           ; if 0 this was the last enemy to check --> done
 
                     sec
-                    sbc #11              ; substract
+                    sbc #13              ; substract
                     tax
-                    jmp _enemy_loop     ; next bullet
+                    jmp _enemy_loop     ; next enemy
             _done
         .bend
     .bend
@@ -601,7 +638,7 @@ ShootSnowball
         lda     next_bullet
         clc
         adc     #5
-        cmp     #(32*5)
+        cmp     #(16*5)
         bne     _next_bullet
 
         lda     #0
@@ -714,45 +751,71 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
     ldy     #1              ; init index to 1 (after the enemy count value)
 
     _enemy_loop
-        #A8
+        #AXY8
         ; set enemy alive
         lda     enemy_objects, X
+        ora     ENEMY_WAITING
         ora     ENEMY_ALIVE
         sta     enemy_objects, X
-        inx
-
-        ; load enemy type
-        lda     [data_ptr], Y 
-        iny
         
-        ; load enemy starting position
-        lda     [data_ptr], Y
-        sta     enemy_objects,X
-        inx
-        inx
-        iny     ; next
-        lda     [data_ptr], Y
-        sta     enemy_objects,X
-        inx
-        inx
-        iny     ; next
+        .block ; load enemy type
+            lda     [data_ptr], Y   ; get enemy index from wave def
+            iny     ; next
+            phx
+                #A8
+                asl     A
+                inc     A
+                tax
 
-        ; pattern index (8-bit)
-        lda     [data_ptr], Y
-        iny     ; next
+                #A16
+                lda     EnemyTable,X
+                sta     data_ptr_0
+            plx
+            sta     enemy_objects,X+5
+        .bend
 
-        ; frame offset until start of wave "playback"
-        #A16
-        lda     [data_ptr], y
-        iny     ; advance two bytes
-        iny     ;
+        .block ; load enemy starting position
+            #A8
+            lda     [data_ptr], Y
+            sta     enemy_objects,X+1
+            iny     ; next
 
-        inx
-        inx
-        inx
-        inx
-        inx
-        inx
+            lda     [data_ptr], Y
+            sta     enemy_objects,X+3
+            iny     ; next
+        .bend
+
+        .block ; load pattern index (8-bit) and starting offset
+            lda     [data_ptr], Y   ; get pattern index from wave def
+            iny     ; next
+            phx
+                #A8
+                asl     A
+                inc     A
+                tax
+
+                #A16
+                lda     PatternTable,X
+                sta     data_ptr_0
+            plx
+            sta     enemy_objects,X+7
+            ; set pattern index to 0
+            lda     #$0000
+            sta     enemy_objects,X+9
+
+            ; frame offset until start of wave "playback"
+            #A16
+            lda     [data_ptr], y
+            sta     enemy_objects,X+11
+            iny     ; advance two bytes
+            iny     ;
+        .bend
+
+        ; advance to next enemy
+        clc
+        txa
+        adc     #13 ; enemy byte stride
+        tax
         
         #A8
         clc

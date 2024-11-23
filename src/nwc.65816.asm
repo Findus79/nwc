@@ -120,12 +120,12 @@ pad_3_repeat        .word   ?
 
 ; player data
 player_one          .dstruct Object
-player_bullets .block   ; 32 bullets for the player at once for now.
-    .fill   32*5        ; 9 bytes per bullet
+player_bullets .block   ; 16 bullets for the player at once for now.
+    .fill   16*5        ; 5 bytes per bullet
 .bend
 
 enemy_objects .block
-    .fill   16*11        ; max of 16 enemies at once
+    .fill   16*13        ; max of 16 enemies at once
 .bend
 
 ; place hdma stuff
@@ -349,30 +349,29 @@ hdma_scroll_b       .dunion HLWord
         .byte   5           ; enemy count
 
         .byte   1           ; enemy type
-        .byte   32          ; first enemy position x,y
-        .byte   32     
-        .byte   0           ; pattern index
-        .word   $0010       ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   64, 32      ; enemy position x,y
+        .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   $0020       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   96, 32      ; enemy position x,y
-        .byte   0           ; pattern index
-        .word   $0030       ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   128, 32     ; enemy position x,y
+        .byte   64, 224     ; enemy position x,y
         .byte   0           ; pattern index
         .word   $0040       ; frame offset until start
 
-        .byte   1           ; enemy type
-        .byte   160, 32     ; enemy position x,y
+        .byte   0           ; enemy type
+        .byte   96, 224     ; enemy position x,y
         .byte   0           ; pattern index
-        .word   $0050       ; frame offset until start
+        .word   $0100       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   128, 224    ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $0080       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   160, 224    ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $00A0       ; frame offset until start
     .bend
     Wave_2
     Wave_3
@@ -460,12 +459,13 @@ Bullet .struct  ; 5 bytes total
     .bend
 .ends
 
-Enemy .struct   ; 11 bytes total
+Enemy .struct   ; 13 bytes total
     flags           .byte       ?
     screenpos       .dstruct    ScreenPosition
     sprite_ptr      .word       ?               ; metasprite ptr
     pattern_ptr     .word       ?               ; wave-pattern ptr
     pattern_index   .word       ?               ; index into wave-pattern (aka "animation" position)
+    frame_offset    .word       ?               ; frames until pattern playback starts
 .ends
 
 .comment

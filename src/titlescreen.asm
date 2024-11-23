@@ -312,7 +312,7 @@ Titlescreen_OnEnter
         #A8
         lda     #0;
         #XY16
-        ldx     #(32*5)
+        ldx     #(16*5)
         _loop
             sta player_bullets,x
             dex
