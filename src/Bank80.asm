@@ -150,13 +150,13 @@ InitSNESAndMirror
     stz     NMIReadyNF
 
     ; load audio driver
-    ; #AXY16
-    ; lda     #<>spc700_code
-    ; ldx     #`spc700_code
-    ; jsl     SPC_Init
-    ; lda 	#1
-    ; jsl     SPC_Stereo
-    ; #A8
+    #AXY16
+    lda     #<>spc_code
+    ldx     #`spc_code
+    jsl     SPC_Init
+    lda 	#1
+    jsl     SPC_Stereo
+    #A8
 
     cli
 
@@ -356,6 +356,7 @@ CopyMetasprite
     ldy #1
 
     _tile_loop
+        ; first check if the current tile is y>224. if so -> skip it
         clc
         lda [sprite_address],y      ; relative x position
         adc sprite_pos_x            ; add absolute x position
@@ -375,6 +376,7 @@ CopyMetasprite
         lda [sprite_address],y      ; attributes
         sta [oam_ptr], y
         iny
+
         dex
         bne _tile_loop
     ; done. increment oam_ptr by
@@ -556,5 +558,10 @@ oam_offset          .word   ?
 
 ; player bullet handling
 next_bullet         .byte   ?
+
+; wave state
+wave_state          .byte   ?   ; alive, dead, etc...
+current_wave        .byte   ?   ; current wave number
+wave_init_state     .byte   ?   ;
 
 .send

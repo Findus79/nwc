@@ -20,6 +20,13 @@ Ingame_OnEnter
     ; disable dma
     stz     $80420C
 
+    ; play music
+    #AXY16
+    lda #<>music_1
+	ldx #`music_1
+	jsl SPC_Play_Song
+    #A8
+
     ; set data_ptr
     #A8
     lda     #`IngameData
@@ -337,8 +344,7 @@ Ingame_OnEnter
     .bend
 
     ; load first wave definition
-    lda     #0
-    jsr     Ingame_LoadWave
+    stz     current_wave
 
     ; clear all sprites
     jsr     ShadowOAM_Clear
@@ -434,65 +440,42 @@ Ingame_Loop
         SetMetasprite PlayerNW, player_one.screenpos.x, player_one.screenpos.y
         
         ; handle/bullets
-        .block ; player bullet update
-            
-            ldx #(15*5)             ; start with last bullet
-
-            _bullet_loop
-                #A8
-                lda player_bullets,X    ; load bullet flags
-                bit BULLET_IN_USE       ; 
-                beq _next_bullet      ; next/prev. bullet
-
-                _update_bullet
-                    #A16
-                    clc
-                    lda     player_bullets,X+3     ; load screenpos.y
-                    sbc     BULLET_SPEED
-                    sta     player_bullets,X+3     ; store new screenpos.y
-
-                _check_offscreen
-                    bpl     _move_bullet
-                
-                _remove_bullet
-                    #A8
-                    lda     #0
-                    sta     player_bullets,X
-                    jmp     _next_bullet      
-                
-                _move_bullet              
-                    #A16
-                    lda     player_bullets,X+1      ; load x position
-                    sta     sprite_pos_x
-
-                    lda     player_bullets,X+3      ; load y position
-                    sta     sprite_pos_y
-                                        
-                    SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
-                    
-                _next_bullet
-                    #A16
-                    txa                 ; get current index
-                    beq _done           ; if 0 this was the last bullet to check --> done
-
-                    sec
-                    sbc #5              ; substract
-                    tax
-                    jmp _bullet_loop    ; next bullet
-            _done
-        .bend
+        jsr     UpdatePlayerBullets
         
+        ; check enemy wave status
+        jsr     CheckCurrentWave
+
         #A8
         ; draw/update current enemy wave objects
         .block ; enemy object update
             
-            ldx #(15*13)             ; start with last enemy
-
+            ldx #(15*13)            ; start loop again          
             _enemy_loop
+                ; preload some vars
+                #A8
+                lda     #`Pattern_Definitions   ; load pattern bank
+                sta     data_bnk                ; store pattern bank
+
+                #A16
+                lda     enemy_objects,X+7       ; load pattern address
+                sta     data_ptr                ; store
+
+                lda     enemy_objects,X+9       ; load current pattern offset
+                tay
+
+                lda     enemy_objects,X+1       ; load x position
+                sta     sprite_pos_x
+
+                lda     enemy_objects,X+3       ; load y position
+                sta     sprite_pos_y
+
+                lda     enemy_objects,X+5       ; load sprite data ptr
+                sta     sprite_data_ptr
+
                 #A8
                 lda     enemy_objects,X     ; load flags
                 bit     ENEMY_ALIVE         ; skip if enemy is not alive
-                beq     _next_enemy         ; next/prev. enemy
+                beq     _next_enemy         ; next/prev. enemy 
 
                 bit     ENEMY_WAITING       ; if enemy is waiting -> decrement frame counter
                 beq     _update_enemy       ; not waiting -> move
@@ -510,29 +493,10 @@ Ingame_Loop
                 sta     enemy_objects,X     ; store new flags
 
                 _update_enemy               ; update enemy according to current set wave pattern
-                    #A16
-                    clc
-                    lda     enemy_objects,X+3     ; load screenpos.y
-                    inc     A
-                    sta     enemy_objects,X+3     ; store new screenpos.y
+                    jsr     Ingame_MoveEnemy
 
-                ; _remove_enemy
-                ;     #A8
-                ;     lda     #0
-                ;     sta     enemy_objects,X
-                ;     jmp     _next_enemy      
-                
+
                 _draw_enemy
-                    #A16
-                    lda     enemy_objects,X+1       ; load x position
-                    sta     sprite_pos_x
-
-                    lda     enemy_objects,X+3       ; load y position
-                    sta     sprite_pos_y
-
-                    lda     enemy_objects,X+5       ; load sprite data ptr
-                    sta     sprite_data_ptr
-
                     .block ; draw sprite 
                         pha
                         phx
@@ -551,7 +515,6 @@ Ingame_Loop
                         ply
                         plx
                         pla
-                        ;SetMetasprite   Enemy_1, sprite_pos_x, sprite_pos_y
                     .bend
 
                 _next_enemy
@@ -575,6 +538,7 @@ MovePlayer_Left
     clc
     lda     player_one.screenpos.x
     dec     A
+    dec     A
     bmi     _done
     sta     player_one.screenpos.x
 
@@ -586,7 +550,8 @@ MovePlayer_Right
     clc
     lda     player_one.screenpos.x
     inc     A
-    cmp     #233
+    inc     A
+    cmp     #234
     beq     _done
     sta     player_one.screenpos.x
     _done
@@ -597,6 +562,7 @@ MovePlayer_Up
     clc
     lda     player_one.screenpos.y
     dec     A
+    dec     A
     bmi     _done
     sta     player_one.screenpos.y
     _done
@@ -606,6 +572,7 @@ MovePlayer_Down
     #A16
     clc
     lda     player_one.screenpos.y
+    inc     A
     inc     A
     cmp     #200
     beq     _done
@@ -652,10 +619,80 @@ ShootSnowball
     .bend
     rts
 
+UpdatePlayerBullets
+    .block ; player bullet update
+            
+        ldx #(15*5)             ; start with last bullet
 
+        _bullet_loop
+            #A8
+            lda player_bullets,X    ; load bullet flags
+            bit BULLET_IN_USE       ; 
+            beq _next_bullet      ; next/prev. bullet
 
+            _update_bullet
+                #A16
+                clc
+                lda     player_bullets,X+3     ; load screenpos.y
+                sbc     BULLET_SPEED
+                sta     player_bullets,X+3     ; store new screenpos.y
 
+            _check_offscreen
+                bpl     _move_bullet
+            
+            _remove_bullet
+                #A8
+                lda     #0
+                sta     player_bullets,X
+                jmp     _next_bullet      
+            
+            _move_bullet              
+                #A16
+                lda     player_bullets,X+1      ; load x position
+                sta     sprite_pos_x
 
+                lda     player_bullets,X+3      ; load y position
+                sta     sprite_pos_y
+                                    
+                SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
+                
+            _next_bullet
+                #A16
+                txa                 ; get current index
+                beq _done           ; if 0 this was the last bullet to check --> done
+
+                sec
+                sbc #5              ; substract
+                tax
+                jmp _bullet_loop    ; next bullet
+        _done
+    .bend
+    rts
+
+CheckCurrentWave
+    #A8
+    .block ; ; simple check if all enemies are dones (killed or end of wave animation)
+        ldx #(15*13)             ; start with last enemy
+        _enemy_check_loop
+
+            lda     enemy_objects,X     ; load enemy flags
+                
+            ; next enemy.
+            #A16
+            txa                 ; get current index
+            beq     _done           ; if 0 this was the last enemy to check --> done
+
+            sec
+            sbc     #13              ; substract
+            tax
+            jmp     _enemy_check_loop     ; next enemy
+                
+        _all_dead_or_gone
+            ; all gone
+
+        _done
+    .bend
+    rts
 
 Ingame_FadeIn
     .block
@@ -713,15 +750,112 @@ Ingame_MovePlayerToStartingPosition
         cmp     #160
         bne     _done
 
-        lda     #<>Ingame_Loop
+        lda     #<>Ingame_StartNextWave
         sta     gamestate_ptr
-
+        
+        #A8
+        lda     #0
+        ora     WAVENUMBER_INIT
+        sta     wave_init_state
+        
         _done
             #A8
             jsr     SetOAMPtr   ; clear sprite shadow table
             ; draw player sprite
             SetMetasprite PlayerNW, player_one.screenpos.x, player_one.screenpos.y
     .bend
+    rts
+
+Ingame_StartNextWave
+    .block
+        #A16
+        jsr     ShadowOAM_Clear         ; clear all sprites
+
+        #A8
+        brk
+        nop
+        nop
+        lda     wave_init_state
+        bit     WAVENUMBER_INIT
+        bne     _init
+        
+        bit     WAVENUMBER_IN
+        bne     _scroll_in
+
+        bit     WAVENUMBER_HOLD
+        bne     _hold
+
+        bit     WAVENUMBER_OUT
+        bne     _scroll_out
+
+        jmp     _done
+
+        _init
+            jsr     WavenumberInit
+            jmp     _done
+
+        _scroll_in
+            jsr     WavenumberScrollIn
+            jmp     _done
+
+        _hold
+            jsr     WavenumberHold
+            jmp     _done
+
+        _scroll_out
+            jsr     WavenumberScrollOut
+            jmp     _done
+
+        _done
+            #A8
+            jsr     SetOAMPtr           ; start at beginning
+            ; draw wave sprite number
+            ; _draw_wave_number .block ; draw sprite 
+            ;     pha
+            ;     phx
+            ;     phy
+            ;         #A8
+            ;         lda     #`Wavesprites    ; load src sprite bank
+            ;         sta     tmp_0
+            ;         #A16
+            ;         lda     sprite_pos_x          ; load x pos to x
+            ;         tax
+            ;         lda     sprite_pos_y          ; load y pos to y
+            ;         tay
+            ;         lda     sprite_data_ptr  
+
+            ;         jsr     CopyMetasprite     
+            ;     ply
+            ;     plx
+            ;     pla
+            ; .bend
+
+            ; draw player sprite
+            SetMetasprite   PlayerNW, player_one.screenpos.x, player_one.screenpos.y
+    .bend
+    rts
+
+WavenumberInit
+    #A16
+    lda     #100
+    sta     sprite_pos_x
+    lda     #224
+    sta     sprite_pos_y
+    ; load wave number sprite
+
+
+    lda     wave_init_state
+    ora     WAVENUMBER_IN
+    sta     wave_init_state
+    rts
+
+WavenumberScrollIn
+    rts
+
+WavenumberHold
+    rts
+
+WavenumberScrollOut
     rts
 
 Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in A (8 bit)
@@ -825,8 +959,57 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
         bne     _enemy_loop
     
     #A8
+    ; set wave alive
+    lda     #0
+    ora     WAVE_ALIVE
+    sta     wave_state
     rts
 
+
+Ingame_MoveEnemy
+    #A8
+    lda     [data_ptr],Y            ; load x movement
+    sta     tmp_0                   ; store
+    iny
+    lda     [data_ptr],Y            ; load y movement
+    sta     tmp_1
+    
+    #A16
+    clc
+    lda     tmp_0                   ; end movement if DEDE is set
+    cmp     #$aaaa
+    beq     _remove_enemy           ; remove if DEDE
+    
+    ; move enemy
+    _move_enemy
+        #A8
+        clc
+        lda     enemy_objects,X+1     
+        adc     tmp_0
+        sta     enemy_objects,X+1
+        clc
+        lda     enemy_objects,X+3     
+        adc     tmp_1
+        sta     enemy_objects,X+3
+        jmp     _next
+
+    _remove_enemy
+        #A8
+        lda     #0
+        sta     enemy_objects,X
+        #A16
+        jmp     _done
+
+    _next
+        ; increment pattern offset pointer by two bytes
+        #A16
+        lda     enemy_objects,X+9       ; load offset
+        clc
+        adc     #2                      ; add two bytes (one for earch x/y)
+        sta     enemy_objects,X+9       ; store new value
+
+    _done
+    rts
 
 Ingame_VBlank
     phb

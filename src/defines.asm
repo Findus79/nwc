@@ -1,12 +1,6 @@
 ; some defines for gamestates etc...
 
 
-STATE_PLAYING = %00000001
-STATE_PAUSED  = %00000010
-
-GS_TITLESCREEN = %00000001
-GS_INGAME      = %00000010
-
 ; bullet flags
 BULLET_IN_USE       = #%10000000
 BULLET_EXPLODING    = #%01000000
@@ -18,6 +12,15 @@ ENEMY_WAITING       = #%01000000
 ENEMY_EXPLODE       = #%00100000
 
 UNSET_ENEMY_WAITING = #%10111111
+
+; wave flags
+WAVE_ALIVE          = #%00000001
+
+; wave number stuff
+WAVENUMBER_INIT     = #%00000001
+WAVENUMBER_IN       = #%00000010
+WAVENUMBER_HOLD     = #%00000100
+WAVENUMBER_OUT      = #%00001000
 
 
 PAD_B       = $8000

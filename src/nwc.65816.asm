@@ -1,5 +1,3 @@
-; super stay forever
-
 .cpu "65816"
 
 ; ROM MAP
@@ -26,6 +24,7 @@
 .logical $818000    ; snes address 81:8000
 .dsection secBank81
 .here
+.byte 0
 .cerror * > $10000, "overflow at bank 81: ", * - $10000
 
 * = $010000         ; file offset
@@ -40,38 +39,51 @@
 .logical $838000
 .dsection secBank83
 .here
+*=$19fff
+.byte 0
 .cerror * > $20000, "overflow at bank 83: ", * - $20000
 
 * = $020000
 .logical $848000
 .dsection secBank84
 .here
+*=$27fff
+.byte 0
 .cerror * > $28000, "overflow at bank 84: ", * - $28000
 
 * = $028000
 .logical $858000
 .dsection secBank85
 .here
+*=$29fff
+.byte 0
 .cerror * > $30000, "overflow at bank 85: ", * - $30000
 
 * = $030000
 .logical $868000
 .dsection secBank86
 .here
+*=$37fff
+.byte 0
 .cerror * > $38000, "overflow at bank 86: ", * - $38000
 
 * = $038000
 .logical $878000
 .dsection secBank87
 .here
+*=$39fff
+.byte 0
 .cerror * > $40000, "overflow at bank 87: ", * - $40000
 
 * = $040000
 .logical $888000
 .dsection secBank88
 .here
+*=$47fff
 .cerror * > $48000, "overflow at bank 88: ", * - $48000
 
+*=$07ffff
+.byte 0
 
 
 
@@ -135,22 +147,23 @@ hdma_scroll_b       .dunion HLWord
 .send ; secLoWRAM
 
 
+.enc "none"
 ; SNES HEADER SETUP
 .section secHeader
     .word   0
-    .text   "TEST"
+    .text   "test"
     .fill   7, 0
     .byte   0       ; RAM
     .byte   0       ; special version
     .byte   0       ; cart type
     ;        123456789012345678901
-    .text   "Nerdwelten Weihnacht " ; needs proper length
+    .text   "nerdwelten weihnacht " ; needs proper length
 .cerror * != $80ffd5, "name is short", *
     .byte   $30     ; mapping
     .byte   $00     ; rom
-    .byte   $10     ; 128K
+    .byte   $09     ; 512K
     .byte   $00     ; 0K SRAM
-    .byte   $01     ; PAL
+    .byte   $00     ; NTSC
     .byte   $33     ; version 3
     .byte   $00     ; rom version 0
     .word   $0000   ; complement
@@ -273,17 +286,6 @@ hdma_scroll_b       .dunion HLWord
         .word   len(binary("../data/Sprites/Sprites.tiles"))
     .bend
 
-    TitlescreenPalette  .binary "../data/Titlescreen/Titlescreen.palette"
-    TitlescreenTiles    .binary "../data/Titlescreen/Foreground.tiles"
-    TitlescreenMap_BG   .binary "../data/Titlescreen/Background.map"
-    TitlescreenMap_FG   .binary "../data/Titlescreen/Foreground.map"
-
-    TitlescreenSpritePalette   .binary "../data/Sprites/snowflakes.palette"
-    TitlescreenSpriteTiles     .binary "../data/Sprites/snowflakes.tiles"
-
-    snowflake_small_a   .binary "../data/Sprites/snowflake_small_a.metasprite"
-    snowflake_medium_a  .binary "../data/Sprites/snowflake_medium_a.metasprite"
-
     IngamePalette   .binary "../data/Ingame/Ingame.palette"
     IngameTiles     .binary "../data/Ingame/Foreground.tiles"
     IngameMap_BG    .binary "../data/Ingame/Background.map"
@@ -296,6 +298,61 @@ hdma_scroll_b       .dunion HLWord
     PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
     Snowball        .binary "../data/Sprites/snowball.metasprite"
 
+    Wavenumbers .block
+        .byte   `Wavesprites
+        .word   <>wave_1
+        .word   <>wave_2
+        .word   <>wave_3
+        .word   <>wave_4
+        .word   <>wave_5
+        .word   <>wave_6
+        .word   <>wave_7
+        .word   <>wave_8
+        .word   <>wave_9
+        .word   <>wave_10
+        .word   <>wave_11
+        .word   <>wave_12
+        .word   <>wave_13
+        .word   <>wave_14
+        .word   <>wave_15
+        .word   <>wave_16
+        .word   <>wave_17
+        .word   <>wave_18
+        .word   <>wave_19
+        .word   <>wave_20
+        .word   <>wave_21
+        .word   <>wave_22
+        .word   <>wave_23
+        .word   <>wave_24
+    .bend
+
+    Wavesprites .block
+        wave_1      .binary "../data/Sprites/wave_1.metasprite"
+        wave_2      .binary "../data/Sprites/wave_2.metasprite"
+        wave_3      .binary "../data/Sprites/wave_3.metasprite"
+        wave_4      .binary "../data/Sprites/wave_4.metasprite"
+        wave_5      .binary "../data/Sprites/wave_5.metasprite"
+        wave_6      .binary "../data/Sprites/wave_6.metasprite"
+        wave_7      .binary "../data/Sprites/wave_7.metasprite"
+        wave_8      .binary "../data/Sprites/wave_8.metasprite"
+        wave_9      .binary "../data/Sprites/wave_9.metasprite"
+        wave_10     .binary "../data/Sprites/wave_10.metasprite"
+        wave_11     .binary "../data/Sprites/wave_11.metasprite"
+        wave_12     .binary "../data/Sprites/wave_12.metasprite"
+        wave_13     .binary "../data/Sprites/wave_13.metasprite"
+        wave_14     .binary "../data/Sprites/wave_14.metasprite"
+        wave_15     .binary "../data/Sprites/wave_15.metasprite"
+        wave_16     .binary "../data/Sprites/wave_16.metasprite"
+        wave_17     .binary "../data/Sprites/wave_17.metasprite"
+        wave_18     .binary "../data/Sprites/wave_18.metasprite"
+        wave_19     .binary "../data/Sprites/wave_19.metasprite"
+        wave_20     .binary "../data/Sprites/wave_20.metasprite"
+        wave_21     .binary "../data/Sprites/wave_21.metasprite"
+        wave_22     .binary "../data/Sprites/wave_22.metasprite"
+        wave_23     .binary "../data/Sprites/wave_23.metasprite"
+        wave_24     .binary "../data/Sprites/wave_24.metasprite"
+    .bend
+    
     Wavetable .block    ; all waves defs have to be stored in the same bank
         .byte   `Wave_Definitions  ; wave-defs bank
         .word   <>Wave_1           ; wave-def addr
@@ -333,12 +390,22 @@ hdma_scroll_b       .dunion HLWord
     PatternTable .block
         .byte   `Pattern_Definitions
         .word   <>Pattern_0
-        .word   <>Pattern_1
     .bend
 
 .send
 
 .section secBank82
+    TitlescreenPalette  .binary "../data/Titlescreen/Titlescreen.palette"
+    TitlescreenTiles    .binary "../data/Titlescreen/Foreground.tiles"
+    TitlescreenMap_BG   .binary "../data/Titlescreen/Background.map"
+    TitlescreenMap_FG   .binary "../data/Titlescreen/Foreground.map"
+
+    TitlescreenSpritePalette   .binary "../data/Sprites/snowflakes.palette"
+    TitlescreenSpriteTiles     .binary "../data/Sprites/snowflakes.tiles"
+
+    snowflake_small_a   .binary "../data/Sprites/snowflake_small_a.metasprite"
+    snowflake_medium_a  .binary "../data/Sprites/snowflake_medium_a.metasprite"
+
     Enemy_Sprites
         Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
         Enemy_1         .binary "../data/Sprites/ufo_elf.metasprite"
@@ -346,32 +413,37 @@ hdma_scroll_b       .dunion HLWord
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
     Wave_1  .block
-        .byte   5           ; enemy count
+        .byte   6           ; enemy count
 
         .byte   1           ; enemy type
-        .byte   32, 224     ; first enemy position x,y
+        .byte   16, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   $0020       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   64, 224     ; enemy position x,y
+        .byte   32, 224     ; enemy position x,y
         .byte   0           ; pattern index
         .word   $0040       ; frame offset until start
 
-        .byte   0           ; enemy type
-        .byte   96, 224     ; enemy position x,y
+        .byte   1           ; enemy type
+        .byte   32, 224     ; enemy position x,y
         .byte   0           ; pattern index
-        .word   $0100       ; frame offset until start
+        .word   $0060       ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   128, 224    ; enemy position x,y
-        .byte   0           ; pattern index
-        .word   $0080       ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   160, 224    ; enemy position x,y
+        .byte   224, 224    ; enemy position x,y
         .byte   0           ; pattern index
         .word   $00A0       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   224, 224    ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $00C0       ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   224, 224    ; enemy position x,y
+        .byte   0           ; pattern index
+        .word   $00E0       ; frame offset until start
     .bend
     Wave_2
     Wave_3
@@ -401,12 +473,16 @@ hdma_scroll_b       .dunion HLWord
     ; 16 bit length, n x/y pairs.
     Pattern_Definitions
         Pattern_0 .block
-            .word   $0001   ; xx yy
+            .binary     "../data/Patterns/test.pattern"
         .bend
-        Pattern_1 .block
-            .word   $0101   ; xx yy
-        .bend
+.send
 
+.section secBank83
+    spc_code
+    .binary     "../data/Music/spc700.bin"    
+
+    music_1
+    .binary     "../data/Music/music_1.bin"
 .send
 
 ; useful definitions from Oziphantom
@@ -461,11 +537,11 @@ Bullet .struct  ; 5 bytes total
 
 Enemy .struct   ; 13 bytes total
     flags           .byte       ?
-    screenpos       .dstruct    ScreenPosition
-    sprite_ptr      .word       ?               ; metasprite ptr
-    pattern_ptr     .word       ?               ; wave-pattern ptr
-    pattern_index   .word       ?               ; index into wave-pattern (aka "animation" position)
-    frame_offset    .word       ?               ; frames until pattern playback starts
+    screenpos       .dstruct    ScreenPosition  ; (+1/3)
+    sprite_ptr      .word       ?               ; (+5)  metasprite ptr
+    pattern_ptr     .word       ?               ; (+7)  wave-pattern ptr
+    pattern_index   .word       ?               ; (+9)  index into wave-pattern (aka "animation" position)
+    frame_offset    .word       ?               ; (+11) frames until pattern playback starts
 .ends
 
 .comment

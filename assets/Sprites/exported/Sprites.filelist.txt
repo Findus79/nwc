@@ -4,3 +4,27 @@ D:\Projekte\Christmas\assets\Sprites\exported\Sprites.MainSprite.layer-Player_SF
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.spr_gingerbreadman.layer-Layer 1.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.snowball.layer-snowball.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.snowman_ufo.layer-ufo_elf.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_24.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_23.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_22.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_21.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_20.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_19.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_18.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_17.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_16.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_15.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_14.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_13.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_12.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_11.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_10.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_9.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_8.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_7.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_6.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_5.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_4.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_3.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_2.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_1.map001.json
