@@ -326,14 +326,14 @@ ShadowOAM_Clear
     rts
 
 SetOAMPtr
-    pha
+    ;pha
         #A16
         lda #<>ShadowOAM-1
         sta oam_ptr
         #A8
         lda #`ShadowOAM
         sta oam_bank
-    pla
+    ;pla
     rts
 
 CopyMetasprite
@@ -341,6 +341,7 @@ CopyMetasprite
     ; a src address
     ; x pos x
     ; y pos y
+
     stx sprite_pos_x
     sty sprite_pos_y
     sta sprite_address
@@ -354,15 +355,14 @@ CopyMetasprite
     lda [sprite_address]
     tax ; use number of tiles for tile-copy loop
     ldy #1
-
+    
     _tile_loop
-        ; first check if the current tile is y>224. if so -> skip it
         clc
         lda [sprite_address],y      ; relative x position
         adc sprite_pos_x            ; add absolute x position
-        sta [oam_ptr], y
+        sta [oam_ptr],y
         iny
-
+        
         clc
         lda [sprite_address],y      ; relative y position
         adc sprite_pos_y            ; add absolute y position
@@ -382,13 +382,13 @@ CopyMetasprite
     ; done. increment oam_ptr by
     #A16
     #XY8
+    clc
     dey
-    clc 
-    lda #0
     tya
     adc oam_ptr
     sta oam_ptr
 
+    _done
     rts
 
 
@@ -537,7 +537,6 @@ NMIReadyNF    .byte   ?
 tmp_0               .byte   ?
 tmp_1               .byte   ?
 tmp_2               .byte   ?
-tmp_3               .byte   ?
 
 wtmp_0              .word   ?
 wtmp_1              .word   ?
@@ -563,5 +562,9 @@ next_bullet         .byte   ?
 wave_state          .byte   ?   ; alive, dead, etc...
 current_wave        .byte   ?   ; current wave number
 wave_init_state     .byte   ?   ;
+
+wavenumber_pos_x    .byte   ?   ;
+wavenumber_pos_y    .byte   ?
+wavenumber_wait     .byte   ?
 
 .send

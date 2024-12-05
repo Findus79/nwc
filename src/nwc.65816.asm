@@ -298,68 +298,66 @@ hdma_scroll_b       .dunion HLWord
     PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
     Snowball        .binary "../data/Sprites/snowball.metasprite"
 
-    Wavenumbers .block
-        .byte   `Wavesprites
-        .word   <>wave_1
-        .word   <>wave_2
-        .word   <>wave_3
-        .word   <>wave_4
-        .word   <>wave_5
-        .word   <>wave_6
-        .word   <>wave_7
-        .word   <>wave_8
-        .word   <>wave_9
-        .word   <>wave_10
-        .word   <>wave_11
-        .word   <>wave_12
-        .word   <>wave_13
-        .word   <>wave_14
-        .word   <>wave_15
-        .word   <>wave_16
-        .word   <>wave_17
-        .word   <>wave_18
-        .word   <>wave_19
-        .word   <>wave_20
-        .word   <>wave_21
-        .word   <>wave_22
-        .word   <>wave_23
-        .word   <>wave_24
-    .bend
-
-    Wavesprites .block
-        wave_1      .binary "../data/Sprites/wave_1.metasprite"
-        wave_2      .binary "../data/Sprites/wave_2.metasprite"
-        wave_3      .binary "../data/Sprites/wave_3.metasprite"
-        wave_4      .binary "../data/Sprites/wave_4.metasprite"
-        wave_5      .binary "../data/Sprites/wave_5.metasprite"
-        wave_6      .binary "../data/Sprites/wave_6.metasprite"
-        wave_7      .binary "../data/Sprites/wave_7.metasprite"
-        wave_8      .binary "../data/Sprites/wave_8.metasprite"
-        wave_9      .binary "../data/Sprites/wave_9.metasprite"
-        wave_10     .binary "../data/Sprites/wave_10.metasprite"
-        wave_11     .binary "../data/Sprites/wave_11.metasprite"
-        wave_12     .binary "../data/Sprites/wave_12.metasprite"
-        wave_13     .binary "../data/Sprites/wave_13.metasprite"
-        wave_14     .binary "../data/Sprites/wave_14.metasprite"
-        wave_15     .binary "../data/Sprites/wave_15.metasprite"
-        wave_16     .binary "../data/Sprites/wave_16.metasprite"
-        wave_17     .binary "../data/Sprites/wave_17.metasprite"
-        wave_18     .binary "../data/Sprites/wave_18.metasprite"
-        wave_19     .binary "../data/Sprites/wave_19.metasprite"
-        wave_20     .binary "../data/Sprites/wave_20.metasprite"
-        wave_21     .binary "../data/Sprites/wave_21.metasprite"
-        wave_22     .binary "../data/Sprites/wave_22.metasprite"
-        wave_23     .binary "../data/Sprites/wave_23.metasprite"
-        wave_24     .binary "../data/Sprites/wave_24.metasprite"
-    .bend
+    Wavenumbers
+        .word   <>wave_spr_1
+        .word   <>wave_spr_2
+        .word   <>wave_spr_3
+        .word   <>wave_spr_4
+        .word   <>wave_spr_5
+        .word   <>wave_spr_6
+        .word   <>wave_spr_7
+        .word   <>wave_spr_8
+        .word   <>wave_spr_9
+        .word   <>wave_spr_10
+        .word   <>wave_spr_11
+        .word   <>wave_spr_12
+        .word   <>wave_spr_13
+        .word   <>wave_spr_14
+        .word   <>wave_spr_15
+        .word   <>wave_spr_16
+        .word   <>wave_spr_17
+        .word   <>wave_spr_18
+        .word   <>wave_spr_19
+        .word   <>wave_spr_20
+        .word   <>wave_spr_21
+        .word   <>wave_spr_22
+        .word   <>wave_spr_23
+        .word   <>wave_spr_24
+    
+    Wavesprites
+        wave_spr_1      .binary "../data/Sprites/wave_01.metasprite"
+        wave_spr_2      .binary "../data/Sprites/wave_02.metasprite"
+        wave_spr_3      .binary "../data/Sprites/wave_03.metasprite"
+        wave_spr_4      .binary "../data/Sprites/wave_04.metasprite"
+        wave_spr_5      .binary "../data/Sprites/wave_05.metasprite"
+        wave_spr_6      .binary "../data/Sprites/wave_06.metasprite"
+        wave_spr_7      .binary "../data/Sprites/wave_07.metasprite"
+        wave_spr_8      .binary "../data/Sprites/wave_08.metasprite"
+        wave_spr_9      .binary "../data/Sprites/wave_09.metasprite"
+        wave_spr_10     .binary "../data/Sprites/wave_10.metasprite"
+        wave_spr_11     .binary "../data/Sprites/wave_11.metasprite"
+        wave_spr_12     .binary "../data/Sprites/wave_12.metasprite"
+        wave_spr_13     .binary "../data/Sprites/wave_13.metasprite"
+        wave_spr_14     .binary "../data/Sprites/wave_14.metasprite"
+        wave_spr_15     .binary "../data/Sprites/wave_15.metasprite"
+        wave_spr_16     .binary "../data/Sprites/wave_16.metasprite"
+        wave_spr_17     .binary "../data/Sprites/wave_17.metasprite"
+        wave_spr_18     .binary "../data/Sprites/wave_18.metasprite"
+        wave_spr_19     .binary "../data/Sprites/wave_19.metasprite"
+        wave_spr_20     .binary "../data/Sprites/wave_20.metasprite"
+        wave_spr_21     .binary "../data/Sprites/wave_21.metasprite"
+        wave_spr_22     .binary "../data/Sprites/wave_22.metasprite"
+        wave_spr_23     .binary "../data/Sprites/wave_23.metasprite"
+        wave_spr_24     .binary "../data/Sprites/wave_24.metasprite"
+    
     
     Wavetable .block    ; all waves defs have to be stored in the same bank
         .byte   `Wave_Definitions  ; wave-defs bank
         .word   <>Wave_1           ; wave-def addr
-        .word   <>Wave_2
-        .word   <>Wave_3
-        .word   <>Wave_4
-        .word   <>Wave_5
+        .word   <>Wave_1
+        .word   <>Wave_1
+        .word   <>Wave_1
+        .word   <>Wave_1
         .word   <>Wave_6
         .word   <>Wave_7
         .word   <>Wave_8
@@ -413,37 +411,52 @@ hdma_scroll_b       .dunion HLWord
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
     Wave_1  .block
-        .byte   6           ; enemy count
+        .byte   9           ; enemy count
 
         .byte   1           ; enemy type
-        .byte   16, 224     ; first enemy position x,y
+        .byte   3*8, 224    ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   $0020       ; frame offset until start
+        .word   11*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   32, 224     ; enemy position x,y
+        .byte   6*8, 224     ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   $0040       ; frame offset until start
+        .word   9*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   32, 224     ; enemy position x,y
+        .byte   9*8, 224     ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   $0060       ; frame offset until start
+        .word   7*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   224, 224    ; enemy position x,y
+        .byte   12*8, 224   ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   $00A0       ; frame offset until start
+        .word   5*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   224, 224    ; enemy position x,y
+        .byte   15*8, 224     ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   $00C0       ; frame offset until start
+        .word   3*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   224, 224    ; enemy position x,y
+        .byte   18*8, 224     ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   $00E0       ; frame offset until start
+        .word   5*8         ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   21*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   7*8         ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   24*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   9*8        ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   27*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   11*8        ; frame offset until start        
     .bend
     Wave_2
     Wave_3

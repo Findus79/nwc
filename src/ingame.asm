@@ -495,9 +495,8 @@ Ingame_Loop
                 _update_enemy               ; update enemy according to current set wave pattern
                     jsr     Ingame_MoveEnemy
 
-
                 _draw_enemy
-                    .block ; draw sprite 
+                    .block ; draw sprite
                         pha
                         phx
                         phy
@@ -752,7 +751,7 @@ Ingame_MovePlayerToStartingPosition
 
         lda     #<>Ingame_StartNextWave
         sta     gamestate_ptr
-        
+
         #A8
         lda     #0
         ora     WAVENUMBER_INIT
@@ -768,13 +767,7 @@ Ingame_MovePlayerToStartingPosition
 
 Ingame_StartNextWave
     .block
-        #A16
-        jsr     ShadowOAM_Clear         ; clear all sprites
-
         #A8
-        brk
-        nop
-        nop
         lda     wave_init_state
         bit     WAVENUMBER_INIT
         bne     _init
@@ -787,6 +780,9 @@ Ingame_StartNextWave
 
         bit     WAVENUMBER_OUT
         bne     _scroll_out
+
+        bit     WAVENUMBER_EXIT
+        bne     _exit
 
         jmp     _done
 
@@ -806,56 +802,123 @@ Ingame_StartNextWave
             jsr     WavenumberScrollOut
             jmp     _done
 
+        _exit
+            #A16
+            lda     #<>Ingame_Loop
+            sta     gamestate_ptr
+            
+            #A8
+            lda     current_wave
+            jsr     Ingame_LoadWave    
+    
+            
         _done
+            #A16
+            jsr     ShadowOAM_Clear         ; clear all sprites
+
             #A8
             jsr     SetOAMPtr           ; start at beginning
             ; draw wave sprite number
-            ; _draw_wave_number .block ; draw sprite 
-            ;     pha
-            ;     phx
-            ;     phy
-            ;         #A8
-            ;         lda     #`Wavesprites    ; load src sprite bank
-            ;         sta     tmp_0
-            ;         #A16
-            ;         lda     sprite_pos_x          ; load x pos to x
-            ;         tax
-            ;         lda     sprite_pos_y          ; load y pos to y
-            ;         tay
-            ;         lda     sprite_data_ptr  
-
-            ;         jsr     CopyMetasprite     
-            ;     ply
-            ;     plx
-            ;     pla
-            ; .bend
+            _draw_wave_number .block ; draw sprite
+                #A8
+                lda     #`Wavesprites    ; load src sprite bank
+                sta     tmp_0
+                #AXY16
+                lda     wavenumber_pos_x          ; load x pos to x
+                tax
+                lda     wavenumber_pos_y          ; load y pos to y
+                tay
+                lda     wtmp_0
+            
+                jsr     CopyMetasprite
+            .bend
 
             ; draw player sprite
             SetMetasprite   PlayerNW, player_one.screenpos.x, player_one.screenpos.y
+            
     .bend
     rts
 
 WavenumberInit
-    #A16
-    lda     #100
-    sta     sprite_pos_x
-    lda     #224
-    sta     sprite_pos_y
     ; load wave number sprite
+    #A8
+    lda     current_wave
+    clc
+    asl     A
+    tax
+    #A16
+    lda     Wavenumbers,X
+    sta     wtmp_0
 
+    ;set initial position
+    #A8
+    lda     #100
+    sta     wavenumber_pos_x
+    lda     #224
+    sta     wavenumber_pos_y
 
-    lda     wave_init_state
+    #A8
+    lda     #0
     ora     WAVENUMBER_IN
     sta     wave_init_state
+    
     rts
 
 WavenumberScrollIn
+    #A8
+    lda     wavenumber_pos_y
+    clc
+    adc     #2
+    cmp     #112
+    beq     _next
+    
+    sta     wavenumber_pos_y
+    jmp     _done
+
+    _next
+        lda     #90                 ; wait 90 frames
+        sta     wavenumber_wait     ;
+        lda     #0
+        ora     WAVENUMBER_HOLD
+        sta     wave_init_state
+
+    _done
     rts
 
 WavenumberHold
+    #A8
+    lda     wavenumber_wait
+    dec     A
+    bmi     _next
+
+    sta     wavenumber_wait
+    jmp     _done
+
+    _next
+        lda     #0
+        ora     WAVENUMBER_OUT
+        sta     wave_init_state
+
+    _done
     rts
 
 WavenumberScrollOut
+    #A8
+    lda     wavenumber_pos_y
+    clc
+    adc     #2
+    cmp     #224
+    beq     _next
+    
+    sta     wavenumber_pos_y
+    jmp     _done
+
+    _next
+        lda     #0
+        ora     WAVENUMBER_EXIT
+        sta     wave_init_state
+        
+    _done
     rts
 
 Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in A (8 bit)
@@ -969,9 +1032,11 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
 Ingame_MoveEnemy
     #A8
     lda     [data_ptr],Y            ; load x movement
+    lda     #0
     sta     tmp_0                   ; store
     iny
     lda     [data_ptr],Y            ; load y movement
+    lda     #1
     sta     tmp_1
     
     #A16

@@ -6,15 +6,15 @@ call "D:\Projekte\nintentool\bin\nintentool.exe" --inputdir %1 --project %2 --ta
  --spritelayer name=snowball tileoffset=0 bpp=4 ^
  --spritelayer name=gingerbreadman tileoffset=0 bpp=4 ^
  --spritelayer name=ufo_elf tileoffset=0 bpp=4 ^
- --spritelayer name=wave_1 tileofset=0 bpp=4 ^
- --spritelayer name=wave_2 tileofset=0 bpp=4 ^
- --spritelayer name=wave_3 tileofset=0 bpp=4 ^
- --spritelayer name=wave_4 tileofset=0 bpp=4 ^
- --spritelayer name=wave_5 tileofset=0 bpp=4 ^
- --spritelayer name=wave_6 tileofset=0 bpp=4 ^
- --spritelayer name=wave_7 tileofset=0 bpp=4 ^
- --spritelayer name=wave_8 tileofset=0 bpp=4 ^
- --spritelayer name=wave_9 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_01 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_02 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_03 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_04 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_05 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_06 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_07 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_08 tileofset=0 bpp=4 ^
+ --spritelayer name=wave_09 tileofset=0 bpp=4 ^
  --spritelayer name=wave_10 tileofset=0 bpp=4 ^
  --spritelayer name=wave_11 tileofset=0 bpp=4 ^
  --spritelayer name=wave_12 tileofset=0 bpp=4 ^
