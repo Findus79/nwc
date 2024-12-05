@@ -852,7 +852,7 @@ WavenumberInit
 
     ;set initial position
     #A8
-    lda     #100
+    lda     #13*8
     sta     wavenumber_pos_x
     lda     #224
     sta     wavenumber_pos_y
@@ -869,7 +869,7 @@ WavenumberScrollIn
     lda     wavenumber_pos_y
     clc
     adc     #2
-    cmp     #112
+    cmp     #100
     beq     _next
     
     sta     wavenumber_pos_y
@@ -1032,11 +1032,9 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
 Ingame_MoveEnemy
     #A8
     lda     [data_ptr],Y            ; load x movement
-    lda     #0
     sta     tmp_0                   ; store
     iny
     lda     [data_ptr],Y            ; load y movement
-    lda     #1
     sta     tmp_1
     
     #A16

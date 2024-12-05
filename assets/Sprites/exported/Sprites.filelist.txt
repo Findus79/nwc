@@ -28,3 +28,4 @@ D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_04.
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_03.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_02.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\Sprites.wavenumbers.layer-wave_01.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\Sprites.layout_helper.layer-Layer 1.map001.json
