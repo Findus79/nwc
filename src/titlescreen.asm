@@ -273,7 +273,7 @@ Titlescreen_OnEnter
         sta     $802108     ;
 
         ; setup sprite mode and address
-        lda     #%00000000
+        lda     #%00000010
         sta     $802101
 
         ; init layers
@@ -312,7 +312,7 @@ Titlescreen_OnEnter
         #A8
         lda     #0;
         #XY16
-        ldx     #(16*5)
+        ldx     #(31*5)
         _loop
             sta player_bullets,x
             dex
@@ -390,7 +390,7 @@ Titlescreen_Main
 
             clc
             lda     pad_1_pressed
-            and     #PAD_A
+            and     #PAD_Y
             bne     _create_snowflake
 
             jmp     _done
@@ -416,55 +416,50 @@ Titlescreen_Main
             _done
         .bend
 
-        ; .block  ; handle snowflake sprites
-        ;     #A16
-        ;     jsr     ShadowOAM_Clear
+        .block  ; handle snowflake sprites
+            #A8
+            jsr     ShadowOAM_Clear
+            jsr     SetOAMPtr
 
-        ;     ldx #(31*5)             ; start with last bullet/snowflake
+            ldx #(31*5)             ; start with last bullet
 
-        ;     _bullet_loop
-        ;         #A8
-        ;         lda     player_bullets,X    ; load bullet flags
-        ;         bit     BULLET_IN_USE       ; 
-        ;         beq     _next_bullet        ; next/prev. bullet
+            _bullet_loop
+                #A8
+                lda player_bullets,X    ; load bullet flags
+                bit BULLET_IN_USE       ; 
+                beq _next_bullet      ; next/prev. bullet
 
-        ;         _update_bullet
-        ;             #A16
-        ;             clc
-        ;             lda     player_bullets,X+3     ; load screenpos.y
-        ;             adc     BULLET_SPEED
-        ;             sta     player_bullets,X+3     ; store new screenpos.y
-
-        ;         ; _check_offscreen
-        ;         ;     bpl     _move_bullet
-                
-        ;         ; _remove_bullet
-        ;         ;     #A8
-        ;         ;     lda     #0
-        ;         ;     sta     player_bullets,X
-        ;         ;     jmp     _next_bullet      
-                
-        ;         _write_bullet              
-        ;             #A16
-        ;             lda     player_bullets,X+1      ; load x position
-        ;             sta     sprite_pos_x
-
-        ;             lda     player_bullets,X+3      ; load y position
-        ;             sta     sprite_pos_y
-                                        
-        ;             SetMetasprite   snowflake_medium_a, sprite_pos_x, sprite_pos_y
+                _update_bullet
+                    #A16
+                    clc
+                    lda     player_bullets,X+3     ; load screenpos.y
+                    adc     #1
+                    sta     player_bullets,X+3     ; store new screenpos.y
                     
-        ;         _next_bullet
-        ;             #A16
-        ;             txa                 ; get current index
-        ;             beq _done           ; if 0 this was the last bullet to check --> done
+                _move_bullet              
+                    #A16
+                    lda     player_bullets,X+1      ; load x position
+                    sta     sprite_pos_x
 
-        ;             sec
-        ;             sbc #5              ; substract
-        ;             tax
-        ;             jmp _bullet_loop    ; next bullet
-        ;     _done
-        ; .bend;
+                    lda     player_bullets,X+3      ; load y position
+                    sta     sprite_pos_y
+                                        
+                    brk
+                    nop
+                    nop
+                    SetMetasprite   snowflake_small_a, sprite_pos_x, sprite_pos_y
+                    
+                _next_bullet
+                    #A16
+                    txa                 ; get current index
+                    beq _done           ; if 0 this was the last bullet to check --> done
+
+                    sec
+                    sbc #5              ; substract
+                    tax
+                    jmp _bullet_loop    ; next bullet
+            _done
+        .bend;
         #AXY8
     .bend
 
@@ -472,41 +467,41 @@ Titlescreen_Main
         rts
 
 Titlescreen_CreateSnowflake
-    ; add a random snowflake (x random y top)
-    ; .block
-    ;     #A8
-    ;     lda     next_bullet
-    ;     tax
+    .block
+        #A8
+        lda     next_bullet
+        tax
         
-    ;     lda     player_bullets,X
-    ;     ora     BULLET_IN_USE
-    ;     sta     player_bullets,X
+        lda     player_bullets,X
+        ora     BULLET_IN_USE
+        sta     player_bullets,X
         
-    ;     #A16
-    ;     lda     current_frame
-    ;     and     #128
-    ;     sta     player_bullets,X+1
+        #A16
+        lda     current_frame
+        ora     #%0101010010101011
+        lsr
+        sta     player_bullets,X+1
         
-    ;     clc
-    ;     lda     #16
-    ;     sta     player_bullets,X+3
+        clc
+        lda     #224
+        sta     player_bullets,X+3
 
-    ;     #A8
-    ;     lda     next_bullet
-    ;     clc
-    ;     adc     #5
-    ;     cmp     #(32*5)
-    ;     bne     _next_bullet
+        #A8
+        lda     next_bullet
+        clc
+        adc     #5
+        cmp     #(31*5)
+        bne     _next_bullet
 
-    ;     lda     #0
-    ;     sta     next_bullet
-    ;     jmp     _done
+        lda     #0
+        sta     next_bullet
+        jmp     _done
 
-    ;     _next_bullet
-    ;         sta next_bullet
+        _next_bullet
+            sta next_bullet
 
-    ;     _done
-    ; .bend
+        _done
+    .bend
     rts
 
 Titlescreen_LogoLeft

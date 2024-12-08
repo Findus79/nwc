@@ -303,11 +303,11 @@ Ingame_OnEnter
     ; reset scrolling registers
 
     ; setup player data
-    #A16
+    #A8
     lda     #116
-    sta     player_one.screenpos.x
+    sta     player_one.screenpos.x.hi
     lda     #160
-    sta     player_one.screenpos.y
+    sta     player_one.screenpos.y.hi
     
     #A8
     lda     #0
@@ -321,7 +321,7 @@ Ingame_OnEnter
         #A8
         lda     #0;
         #XY16
-        ldx     #(16*5)
+        ldx     #(31*5)
         _loop
             sta player_bullets,x
             dex
@@ -437,7 +437,7 @@ Ingame_Loop
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
         ; draw player sprite
-        SetMetasprite PlayerNW, player_one.screenpos.x, player_one.screenpos.y
+        SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
@@ -536,9 +536,7 @@ MovePlayer_Left
     #A16
     clc
     lda     player_one.screenpos.x
-    dec     A
-    dec     A
-    bmi     _done
+    sbc     PLAYER_SPEED
     sta     player_one.screenpos.x
 
     _done
@@ -548,10 +546,7 @@ MovePlayer_Right
     #A16
     clc
     lda     player_one.screenpos.x
-    inc     A
-    inc     A
-    cmp     #234
-    beq     _done
+    adc     PLAYER_SPEED
     sta     player_one.screenpos.x
     _done
     rts
@@ -560,9 +555,7 @@ MovePlayer_Up
     #A16
     clc
     lda     player_one.screenpos.y
-    dec     A
-    dec     A
-    bmi     _done
+    sbc     PLAYER_SPEED
     sta     player_one.screenpos.y
     _done
     rts
@@ -571,8 +564,7 @@ MovePlayer_Down
     #A16
     clc
     lda     player_one.screenpos.y
-    inc     A
-    inc     A
+    adc     PLAYER_SPEED
     cmp     #200
     beq     _done
     sta     player_one.screenpos.y
@@ -593,7 +585,7 @@ ShootSnowball
         #A16
         lda     player_one.screenpos.x
         clc
-        adc     #8
+        adc     #$0800
         sta     player_bullets,X+1
         
         clc
@@ -604,7 +596,7 @@ ShootSnowball
         lda     next_bullet
         clc
         adc     #5
-        cmp     #(16*5)
+        cmp     #(31*5)
         bne     _next_bullet
 
         lda     #0
@@ -621,7 +613,7 @@ ShootSnowball
 UpdatePlayerBullets
     .block ; player bullet update
             
-        ldx #(15*5)             ; start with last bullet
+        ldx #(31*5)             ; start with last bullet
 
         _bullet_loop
             #A8
@@ -631,13 +623,13 @@ UpdatePlayerBullets
 
             _update_bullet
                 #A16
-                clc
+                sec
                 lda     player_bullets,X+3     ; load screenpos.y
                 sbc     BULLET_SPEED
                 sta     player_bullets,X+3     ; store new screenpos.y
 
             _check_offscreen
-                bpl     _move_bullet
+                bcs     _move_bullet
             
             _remove_bullet
                 #A8
@@ -646,11 +638,11 @@ UpdatePlayerBullets
                 jmp     _next_bullet      
             
             _move_bullet              
-                #A16
-                lda     player_bullets,X+1      ; load x position
+                #A8
+                lda     player_bullets,X+2      ; load x position
                 sta     sprite_pos_x
 
-                lda     player_bullets,X+3      ; load y position
+                lda     player_bullets,X+4      ; load y position
                 sta     sprite_pos_y
                                     
                 SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
@@ -675,7 +667,9 @@ CheckCurrentWave
         _enemy_check_loop
 
             lda     enemy_objects,X     ; load enemy flags
-                
+            ;cmp     #0
+            ;bne     _done
+
             ; next enemy.
             #A16
             txa                 ; get current index
@@ -688,10 +682,20 @@ CheckCurrentWave
                 
         _all_dead_or_gone
             ; all gone
+            brk
+            nop
+            nop
 
         _done
     .bend
     rts
+
+CheckBulletVsEnemies
+    ; loop all active bullets
+    ; check against all active enemies
+    ; remove both if hit
+    rts
+
 
 Ingame_FadeIn
     .block
@@ -729,7 +733,7 @@ Ingame_FadeIn
             sta     gamestate_ptr
             ; set player pos and move him onscreen
             lda     #223
-            sta     player_one.screenpos.y
+            sta     player_one.screenpos.y.hi
         _done
     .bend
     rts
@@ -742,26 +746,27 @@ Ingame_MovePlayerToStartingPosition
         #A16
         jsr     ShadowOAM_Clear
 
+        #A8
         clc
-        lda     player_one.screenpos.y
+        lda     player_one.screenpos.y.hi
         dec     A
-        sta     player_one.screenpos.y
+        sta     player_one.screenpos.y.hi
         cmp     #160
         bne     _done
 
-        lda     #<>Ingame_StartNextWave
-        sta     gamestate_ptr
-
-        #A8
         lda     #0
         ora     WAVENUMBER_INIT
         sta     wave_init_state
-        
+
+        #A16
+        lda     #<>Ingame_StartNextWave
+        sta     gamestate_ptr
+
         _done
             #A8
             jsr     SetOAMPtr   ; clear sprite shadow table
             ; draw player sprite
-            SetMetasprite PlayerNW, player_one.screenpos.x, player_one.screenpos.y
+            SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
     .bend
     rts
 
@@ -834,7 +839,7 @@ Ingame_StartNextWave
             .bend
 
             ; draw player sprite
-            SetMetasprite   PlayerNW, player_one.screenpos.x, player_one.screenpos.y
+            SetMetasprite   PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
             
     .bend
     rts

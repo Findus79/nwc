@@ -133,7 +133,7 @@ pad_3_repeat        .word   ?
 ; player data
 player_one          .dstruct Object
 player_bullets .block   ; 16 bullets for the player at once for now.
-    .fill   16*5        ; 5 bytes per bullet
+    .fill   32*5        ; 5 bytes per bullet
 .bend
 
 enemy_objects .block
@@ -249,11 +249,11 @@ hdma_scroll_b       .dunion HLWord
     .block
         .byte   `TitlescreenSpritePalette
         .word   <>TitlescreenSpritePalette
-        .word   len(binary("../data/Sprites/Sprites.palette"))
+        .word   len(binary("../data/Sprites/snowflakes.palette"))
 
         .byte   `TitlescreenSpriteTiles
         .word   <>TitlescreenSpriteTiles
-        .word   len(binary("../data/Sprites/Sprites.tiles"))
+        .word   len(binary("../data/Sprites/snowflakes.tiles"))
     .bend
 
     IngameData

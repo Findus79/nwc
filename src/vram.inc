@@ -28,11 +28,12 @@ SetMetasprite .macro    ; 1 src metasprite, x pos, y pos
     phy
         lda     #`\1        ; load src sprite bank
         sta     tmp_0
-        #A16
+        #A8
         lda     \2          ; load x pos to x
         tax
         lda     \3          ; load y pos to y
         tay
+        #A16
         lda     #<>\1    
 
         jsr     CopyMetasprite

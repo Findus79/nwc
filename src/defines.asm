@@ -1,10 +1,11 @@
 ; some defines for gamestates etc...
 
+PLAYER_SPEED        = #255
 
 ; bullet flags
 BULLET_IN_USE       = #%10000000
 BULLET_EXPLODING    = #%01000000
-BULLET_SPEED        = #2
+BULLET_SPEED        = #511
 
 ; enemy flags
 ENEMY_ALIVE         = #%10000000
