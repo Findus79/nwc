@@ -1,6 +1,6 @@
 ; some defines for gamestates etc...
 
-PLAYER_SPEED        = #255
+PLAYER_SPEED        = #384
 
 ; bullet flags
 BULLET_IN_USE       = #%10000000

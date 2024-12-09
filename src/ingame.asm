@@ -534,12 +534,14 @@ Ingame_Loop
 
 MovePlayer_Left
     #A16
-    clc
+    sec
     lda     player_one.screenpos.x
     sbc     PLAYER_SPEED
-    sta     player_one.screenpos.x
+    bcs     _done
 
+    lda     #$0000
     _done
+    sta     player_one.screenpos.x
     rts
 
 MovePlayer_Right
@@ -547,17 +549,24 @@ MovePlayer_Right
     clc
     lda     player_one.screenpos.x
     adc     PLAYER_SPEED
-    sta     player_one.screenpos.x
+    cmp     #$E800
+    bcc     _done
+    lda     #$E800
+
     _done
+    sta     player_one.screenpos.x
     rts
 
 MovePlayer_Up
     #A16
-    clc
+    sec
     lda     player_one.screenpos.y
     sbc     PLAYER_SPEED
-    sta     player_one.screenpos.y
+    bcs     _done
+
+    lda     #$0000
     _done
+    sta     player_one.screenpos.y
     rts
 
 MovePlayer_Down
@@ -565,10 +574,12 @@ MovePlayer_Down
     clc
     lda     player_one.screenpos.y
     adc     PLAYER_SPEED
-    cmp     #200
-    beq     _done
-    sta     player_one.screenpos.y
+    cmp     #$C800
+    bcc     _done
+    lda     #$C800
+    
     _done
+    sta     player_one.screenpos.y
     rts
 
 
