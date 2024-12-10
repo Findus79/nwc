@@ -20,14 +20,6 @@ Ingame_OnEnter
     ; disable dma
     stz     $80420C
 
-    ; play music
-    #AXY16
-    lda #<>music_1
-	ldx #`music_1
-	jsl SPC_Play_Song
-    #A8
-
-    ; set data_ptr
     #A8
     lda     #`IngameData
     sta     data_bnk
@@ -455,19 +447,11 @@ Ingame_Loop
                 #A8
                 lda     #`Pattern_Definitions   ; load pattern bank
                 sta     data_bnk                ; store pattern bank
+                sta     wave_pattern_bank       ; doppelt gemoppelt :D
 
                 #A16
                 lda     enemy_objects,X+7       ; load pattern address
                 sta     data_ptr                ; store
-
-                lda     enemy_objects,X+9       ; load current pattern offset
-                tay
-
-                lda     enemy_objects,X+1       ; load x position
-                sta     sprite_pos_x
-
-                lda     enemy_objects,X+3       ; load y position
-                sta     sprite_pos_y
 
                 lda     enemy_objects,X+5       ; load sprite data ptr
                 sta     sprite_data_ptr
@@ -492,8 +476,13 @@ Ingame_Loop
                 and     UNSET_ENEMY_WAITING ; start it next frame
                 sta     enemy_objects,X     ; store new flags
 
-                _update_enemy               ; update enemy according to current set wave pattern
+                _update_enemy                       ; update enemy according to current set wave pattern
+                    #A16
+                    lda     enemy_objects,X+9       ; load current pattern offset
+                    sta     wave_pattern_ptr
+                    #A8
                     jsr     Ingame_MoveEnemy
+                    
 
                 _draw_enemy
                     .block ; draw sprite
@@ -503,11 +492,13 @@ Ingame_Loop
                             #A8
                             lda     #`Enemy_Sprites    ; load src sprite bank
                             sta     tmp_0
-                            #A16
-                            lda     sprite_pos_x          ; load x pos to x
-                            tax
-                            lda     sprite_pos_y          ; load y pos to y
+                            #A8
+                            #XY8
+                            lda     enemy_objects,X+4     ; load y-hi pos to y
                             tay
+                            lda     enemy_objects,X+2     ; load x-hi pos to x
+                            tax
+                            #A16
                             lda     sprite_data_ptr  
 
                             jsr     CopyMetasprite     
@@ -990,11 +981,11 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
         .block ; load enemy starting position
             #A8
             lda     [data_ptr], Y
-            sta     enemy_objects,X+1
+            sta     enemy_objects,X+2
             iny     ; next
 
             lda     [data_ptr], Y
-            sta     enemy_objects,X+3
+            sta     enemy_objects,X+4
             iny     ; next
         .bend
 
@@ -1013,7 +1004,6 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
             plx
             sta     enemy_objects,X+7
             ; set pattern index to 0
-            lda     #$0000
             sta     enemy_objects,X+9
 
             ; frame offset until start of wave "playback"
@@ -1046,33 +1036,39 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
 
 
 Ingame_MoveEnemy
-    #A8
-    lda     [data_ptr],Y            ; load x movement
-    sta     tmp_0                   ; store
-    iny
-    lda     [data_ptr],Y            ; load y movement
-    sta     tmp_1
-    
     #A16
-    clc
-    lda     tmp_0                   ; end movement if DEDE is set
+    brk
+    nop
+    nop
+    lda     [wave_pattern_ptr]       ; load x movement
     cmp     #$aaaa
-    beq     _remove_enemy           ; remove if DEDE
+    bcs     _remove_enemy
+    sta     wtmp_0                   ; store
+
+    inc     wave_pattern_ptr
+    inc     wave_pattern_ptr
+    lda     [wave_pattern_ptr]       ; load y movement
+    cmp     #$aaaa
+    bcs     _remove_enemy
+    sta     wtmp_1
     
     ; move enemy
     _move_enemy
-        #A8
+        #A16
         clc
         lda     enemy_objects,X+1     
-        adc     tmp_0
+        adc     wtmp_0
         sta     enemy_objects,X+1
         clc
         lda     enemy_objects,X+3     
-        adc     tmp_1
+        adc     wtmp_1
         sta     enemy_objects,X+3
         jmp     _next
 
     _remove_enemy
+        brk
+        nop
+        nop
         #A8
         lda     #0
         sta     enemy_objects,X
@@ -1080,11 +1076,11 @@ Ingame_MoveEnemy
         jmp     _done
 
     _next
-        ; increment pattern offset pointer by two bytes
+        ; increment pattern offset pointer by four bytes
         #A16
-        lda     enemy_objects,X+9       ; load offset
+        lda     wave_pattern_ptr        ; load offset
         clc
-        adc     #2                      ; add two bytes (one for earch x/y)
+        adc     #2                      ; add four bytes (2 * 8.8)
         sta     enemy_objects,X+9       ; store new value
 
     _done

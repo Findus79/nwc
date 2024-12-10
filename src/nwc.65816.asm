@@ -411,7 +411,7 @@ hdma_scroll_b       .dunion HLWord
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
     Wave_1  .block
-        .byte   9           ; enemy count
+        .byte   1           ; enemy count
 
         .byte   1           ; enemy type
         .byte   3*8, 224    ; first enemy position x,y

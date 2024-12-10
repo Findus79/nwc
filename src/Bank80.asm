@@ -567,4 +567,7 @@ wavenumber_pos_x    .byte   ?   ;
 wavenumber_pos_y    .byte   ?
 wavenumber_wait     .byte   ?
 
+wave_pattern_ptr    .word   ?
+wave_pattern_bank   .byte   ?
+
 .send

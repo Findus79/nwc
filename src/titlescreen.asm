@@ -357,6 +357,13 @@ Titlescreen_OnEnter
     lda     #<>Titlescreen_VBlank
     sta     vblank_ptr
 
+    ; play music
+    #AXY16
+    lda #<>music_1
+	ldx #`music_1
+	jsl SPC_Play_Song
+    #A8
+
     #XY8
     #A8
 
