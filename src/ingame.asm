@@ -411,17 +411,16 @@ Ingame_Loop
         #A16
         jsr     ShadowOAM_Clear
 
-        ; collision detection
-
-        ; scoring
-
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
-        ; draw player sprite
+        ; draw player sprite first (in front of everything else)
         SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
+
+        ; so some collision checks
+        jsr     CheckBulletsVsEnemies
         
         ; check enemy wave status
         jsr     CheckCurrentWave
@@ -585,43 +584,43 @@ MovePlayer_Down
     rts
 
 
-ShootSnowball
-    .block
-        #A8
-        lda     next_bullet
-        tax
-        
-        lda     player_bullets,X
-        ora     BULLET_IN_USE
-        sta     player_bullets,X
-        
-        #A16
-        lda     player_one.screenpos.x
-        clc
-        adc     #$0800
-        sta     player_bullets,X+1
-        
-        clc
-        lda     player_one.screenpos.y
-        sta     player_bullets,X+3
+ShootSnowball .block
+    #A8
+    lda     next_bullet
+    tax
+    
+    lda     player_bullets,X
+    ora     BULLET_IN_USE
+    sta     player_bullets,X
+    
+    #A16
+    lda     player_one.screenpos.x
+    clc
+    adc     #$0800
+    sta     player_bullets,X+1
+    
+    clc
+    lda     player_one.screenpos.y
+    sta     player_bullets,X+3
 
-        #A8
-        lda     next_bullet
-        clc
-        adc     #5
-        cmp     #(31*5)
-        bne     _next_bullet
+    #A8
+    lda     next_bullet
+    clc
+    adc     #5
+    cmp     #(31*5)
+    bne     _next_bullet
 
-        lda     #0
-        sta     next_bullet
-        jmp     _done
+    lda     #0
+    sta     next_bullet
+    jmp     _done
 
-        _next_bullet
-            sta next_bullet
+    _next_bullet
+        sta next_bullet
 
-        _done
-    .bend
+    _done
     rts
+.bend
+    
 
 ClearBullets .block; clear bullets
     #A8
@@ -713,11 +712,92 @@ CheckCurrentWave
     .bend
     rts
 
-CheckBulletVsEnemies
+CheckBulletsVsEnemies .block
     ; loop all active bullets
     ; check against all active enemies
     ; remove both if hit
+    ldx #(31*5)             ; start with last bullet
+
+    _bullet_loop
+        #A8
+        lda     player_bullets,X    ; load bullet flags
+        sta     tmp_2
+        bit     BULLET_IN_USE       ; 
+        beq     _next_bullet      ; next/prev. bullet
+
+        ; load bullet screen position (take "middle pixel" only)
+        #A8
+        clc
+        lda     player_bullets,X+2      ; x position
+        adc     #4                      ; add 4 pixels
+        sta     tmp_0                   ;
+
+        clc
+        lda     player_bullets,X+4      ; y position (hi-byte only)
+        adc     #4                      ; add 4 pixels
+        sta     tmp_1                   ;
+
+        .block  ; loop all active enemies
+        phx 
+            ldx #(15*13)            ; start loop again          
+            _enemy_loop
+                lda     enemy_objects,X     ; load flags
+                bit     ENEMY_ALIVE         ; skip if enemy is not alive
+                beq     _next_enemy         ; next/prev. enemy 
+
+                ; load enemy position
+                lda     enemy_objects,X+2     ; load x-hi position
+                cmp     tmp_0
+                bcs     _next_enemy           ; if (tmp_0<left_sprite_border)
+                clc
+                adc     #16                   ; move check to right border
+                cmp     tmp_0                  
+                bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
+
+                lda     enemy_objects,X+4     ; load y-hi position
+                cmp     tmp_1
+                bcs     _next_enemy           ; if (tmp_0<left_sprite_border)
+                clc
+                adc     #16                   ; move check to right border
+                cmp     tmp_1                  
+                bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
+
+                ; enemy has been hit -> remove hit
+                brk
+                nop
+                nop
+                lda     #0
+                sta     enemy_objects,X
+                sta     tmp_2
+                jmp     _done                 ; remove only one enemy at a time
+
+                _next_enemy
+                    txa                 ; get current index
+                    beq _done           ; if 0 this was the last enemy to check --> done
+
+                    sec
+                    sbc #13              ; substract
+                    tax
+                    jmp _enemy_loop     ; next enemy
+            _done            
+        plx
+        .bend
+
+        ; set bullet state
+        lda     tmp_2
+        sta     player_bullets,X    ; removes bullet if tmp_2==0
+
+        _next_bullet
+            txa                 ; get current index
+            beq _done           ; if 0 this was the last bullet to check --> done
+
+            sec
+            sbc #5              ; substract
+            tax
+            jmp _bullet_loop    ; next bullet
+    _done
     rts
+.bend
 
 
 Ingame_FadeIn
