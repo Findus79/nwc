@@ -354,20 +354,20 @@ hdma_scroll_b       .dunion HLWord
     Wavetable .block    ; all waves defs have to be stored in the same bank
         .byte   `Wave_Definitions  ; wave-defs bank
         .word   <>Wave_1           ; wave-def addr
+        .word   <>Wave_2
         .word   <>Wave_1
+        .word   <>Wave_2
         .word   <>Wave_1
+        .word   <>Wave_2
         .word   <>Wave_1
+        .word   <>Wave_2
         .word   <>Wave_1
-        .word   <>Wave_6
-        .word   <>Wave_7
-        .word   <>Wave_8
-        .word   <>Wave_9
-        .word   <>Wave_10
-        .word   <>Wave_11
-        .word   <>Wave_12
-        .word   <>Wave_13
-        .word   <>Wave_14
-        .word   <>Wave_15
+        .word   <>Wave_2
+        .word   <>Wave_1
+        .word   <>Wave_2
+        .word   <>Wave_1
+        .word   <>Wave_2
+        .word   <>Wave_1
         .word   <>Wave_16
         .word   <>Wave_17
         .word   <>Wave_18
@@ -411,54 +411,61 @@ hdma_scroll_b       .dunion HLWord
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
     Wave_1  .block
-        .byte   1           ; enemy count
+        .byte   9          ; enemy count
 
         .byte   1           ; enemy type
-        .byte   3*8, 224    ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   11*8         ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   6*8, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   9*8         ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   9*8, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   7*8         ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   12*8, 224   ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   5*8         ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   15*8, 224     ; first enemy position x,y
+        .byte   5*8, 224    ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   18*8, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   5*8         ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   21*8, 224     ; first enemy position x,y
+        .byte   5*8, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   7*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   24*8, 224     ; first enemy position x,y
+        .byte   5*8, 224     ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   9*8        ; frame offset until start
+        .word   11*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   27*8, 224     ; first enemy position x,y
+        .byte   5*8, 224   ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   11*8        ; frame offset until start        
+        .word   15*8         ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   5*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   19*8         ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   5*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   23*8         ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   5*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   27*8         ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   5*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   31*8        ; frame offset until start
+
+        .byte   1           ; enemy type
+        .byte   5*8, 224     ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   35*8        ; frame offset until start        
     .bend
-    Wave_2
+    Wave_2 .block
+        .byte   1          ; enemy count
+
+        .byte   0           ; enemy type
+        .byte   100, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+    .bend
     Wave_3
     Wave_4
     Wave_5

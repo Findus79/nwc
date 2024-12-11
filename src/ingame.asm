@@ -309,18 +309,7 @@ Ingame_OnEnter
     sta     player_one.speed
 
     ; clear all player bullets
-    .block; clear bullets
-        #A8
-        lda     #0;
-        #XY16
-        ldx     #(31*5)
-        _loop
-            sta player_bullets,x
-            dex
-            bne _loop
-        ; clear last element
-        sta player_bullets,X
-    .bend
+    jsr     ClearBullets
 
     .block; clear enemy objects
         #A8
@@ -436,8 +425,28 @@ Ingame_Loop
         
         ; check enemy wave status
         jsr     CheckCurrentWave
+        bmi     _enemy_updates  ; continue with enemy updates
+
+        ; move to next wave
+        #A8
+        lda     current_wave
+        inc     A
+        sta     current_wave
+        lda     #0
+        ora     WAVENUMBER_INIT
+        sta     wave_init_state
+
+        jsr     ClearBullets
+
+        #A16
+        lda     #<>Ingame_StartNextWave
+        sta     gamestate_ptr
+        #A8
+
+        jmp     _done
 
         #A8
+        _enemy_updates
         ; draw/update current enemy wave objects
         .block ; enemy object update
             
@@ -518,6 +527,8 @@ Ingame_Loop
                     jmp _enemy_loop     ; next enemy
             _done
         .bend
+
+        _done
     .bend
 
     _done
@@ -612,6 +623,21 @@ ShootSnowball
     .bend
     rts
 
+ClearBullets .block; clear bullets
+    #A8
+    lda     #0;
+    #XY16
+    ldx     #(31*5)
+    _loop
+        sta player_bullets,x
+        dex
+        bne _loop
+    ; clear last element
+    sta player_bullets,X
+    #AXY8
+    rts
+.bend
+
 UpdatePlayerBullets
     .block ; player bullet update
             
@@ -669,24 +695,19 @@ CheckCurrentWave
         _enemy_check_loop
 
             lda     enemy_objects,X     ; load enemy flags
-            ;cmp     #0
-            ;bne     _done
+            bne     _done               ; if not zero -> someone is still alive -> early out
 
             ; next enemy.
-            #A16
-            txa                 ; get current index
-            beq     _done           ; if 0 this was the last enemy to check --> done
+            txa                         ; get current index
+            beq     _all_dead_or_gone   ; if 0 this was the last enemy to check --> all gone
 
             sec
-            sbc     #13              ; substract
+            sbc     #13                 ; substract
             tax
-            jmp     _enemy_check_loop     ; next enemy
+            jmp     _enemy_check_loop   ; next enemy
                 
         _all_dead_or_gone
-            ; all gone
-            brk
-            nop
-            nop
+            rep     #$80                ; set zero flag
 
         _done
     .bend
@@ -1037,9 +1058,6 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
 
 Ingame_MoveEnemy
     #A16
-    brk
-    nop
-    nop
     lda     [wave_pattern_ptr]       ; load x movement
     cmp     #$aaaa
     bcs     _remove_enemy
@@ -1066,9 +1084,6 @@ Ingame_MoveEnemy
         jmp     _next
 
     _remove_enemy
-        brk
-        nop
-        nop
         #A8
         lda     #0
         sta     enemy_objects,X
