@@ -6,6 +6,8 @@ call "D:\Projekte\nintentool\bin\nintentool.exe" --inputdir %1 --project %2 --ta
  --spritelayer name=snowball tileoffset=0 bpp=4 ^
  --spritelayer name=gingerbreadman tileoffset=0 bpp=4 ^
  --spritelayer name=ufo_elf tileoffset=0 bpp=4 ^
+ --spritelayer name=floppy tileoffset=0 bpp=4 ^
+ --spritelayer name=santa tileoffset=0 bpp=4 ^
  --spritelayer name=wave_01 tileofset=0 bpp=4 ^
  --spritelayer name=wave_02 tileofset=0 bpp=4 ^
  --spritelayer name=wave_03 tileofset=0 bpp=4 ^

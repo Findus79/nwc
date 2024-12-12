@@ -368,14 +368,14 @@ hdma_scroll_b       .dunion HLWord
         .word   <>Wave_1
         .word   <>Wave_2
         .word   <>Wave_1
-        .word   <>Wave_16
-        .word   <>Wave_17
-        .word   <>Wave_18
-        .word   <>Wave_19
-        .word   <>Wave_20
-        .word   <>Wave_21
-        .word   <>Wave_22
-        .word   <>Wave_23
+        .word   <>Wave_2
+        .word   <>Wave_1
+        .word   <>Wave_2
+        .word   <>Wave_1
+        .word   <>Wave_2
+        .word   <>Wave_1
+        .word   <>Wave_2
+        .word   <>Wave_1
         .word   <>Wave_24
     .bend
 
@@ -383,6 +383,7 @@ hdma_scroll_b       .dunion HLWord
         .byte   `Enemy_Sprites
         .word   <>Enemy_0
         .word   <>Enemy_1
+        .word   <>Enemy_2
     .bend
 
     PatternTable .block
@@ -407,6 +408,7 @@ hdma_scroll_b       .dunion HLWord
     Enemy_Sprites
         Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
         Enemy_1         .binary "../data/Sprites/ufo_elf.metasprite"
+        Enemy_2         .binary "../data/Sprites/santa.metasprite"
 
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
@@ -461,7 +463,7 @@ hdma_scroll_b       .dunion HLWord
     Wave_2 .block
         .byte   1          ; enemy count
 
-        .byte   0           ; enemy type
+        .byte   2           ; enemy type
         .byte   100, 224    ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
