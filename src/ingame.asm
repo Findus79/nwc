@@ -399,8 +399,6 @@ Ingame_Loop
         lda     #60 ; wait sixty frames
         sta     wavenumber_wait
 
-        jsr     ClearBullets
-
         #A16
         lda     #<>Ingame_StartNextWave
         sta     gamestate_ptr
