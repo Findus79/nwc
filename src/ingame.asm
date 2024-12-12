@@ -367,45 +367,7 @@ Ingame_OnEnter
 
 Ingame_Loop
     ; scroll backgrounds
-    .block  ; handle input
-        #A16
-        _move_left
-            lda     pad_1_repeat
-            and     #PAD_LEFT
-            beq     _move_right
-
-            jsr     MovePlayer_Left
-
-        _move_right
-            lda     pad_1_repeat
-            and     #PAD_RIGHT
-            beq     _move_up
-
-            jsr     MovePlayer_Right
-
-        _move_up
-            lda     pad_1_repeat
-            and     #PAD_UP
-            beq     _move_down
-
-            jsr     MovePlayer_Up
-
-        _move_down
-            lda     pad_1_repeat
-            and     #PAD_DOWN
-            beq     _shoot_snowball
-
-            jsr     MovePlayer_Down
-
-        _shoot_snowball
-            lda     pad_1_pressed
-            and     #PAD_Y
-            beq     _input_done
-
-            jsr     ShootSnowball
-        
-        _input_done
-    .bend
+    jsr     HandleInput
 
     .block  ; sprite loop
         #A16
@@ -532,6 +494,47 @@ Ingame_Loop
 
     _done
         rts
+
+HandleInput .block
+    #A16    
+    _move_left
+        lda     pad_1_repeat
+        and     #PAD_LEFT
+        beq     _move_right
+
+        jsr     MovePlayer_Left
+
+    _move_right
+        lda     pad_1_repeat
+        and     #PAD_RIGHT
+        beq     _move_up
+
+        jsr     MovePlayer_Right
+
+    _move_up
+        lda     pad_1_repeat
+        and     #PAD_UP
+        beq     _move_down
+
+        jsr     MovePlayer_Up
+
+    _move_down
+        lda     pad_1_repeat
+        and     #PAD_DOWN
+        beq     _shoot_snowball
+
+        jsr     MovePlayer_Down
+
+    _shoot_snowball
+        lda     pad_1_pressed
+        and     #PAD_Y
+        beq     _input_done
+
+        jsr     ShootSnowball
+    
+    _input_done
+    rts
+.bend
 
 MovePlayer_Left
     #A16
@@ -721,7 +724,7 @@ CheckBulletsVsEnemies .block
     _bullet_loop
         #A8
         lda     player_bullets,X    ; load bullet flags
-        sta     tmp_2
+        sta     tmp_2               ; keep flag
         bit     BULLET_IN_USE       ; 
         beq     _next_bullet      ; next/prev. bullet
 
@@ -763,12 +766,9 @@ CheckBulletsVsEnemies .block
                 bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
 
                 ; enemy has been hit -> remove hit
-                brk
-                nop
-                nop
                 lda     #0
                 sta     enemy_objects,X
-                sta     tmp_2
+                sta     tmp_2                 ; store 0 for bullet flag
                 jmp     _done                 ; remove only one enemy at a time
 
                 _next_enemy
@@ -784,7 +784,7 @@ CheckBulletsVsEnemies .block
         .bend
 
         ; set bullet state
-        lda     tmp_2
+        lda     tmp_2               ;
         sta     player_bullets,X    ; removes bullet if tmp_2==0
 
         _next_bullet
@@ -874,6 +874,8 @@ Ingame_MovePlayerToStartingPosition
     rts
 
 Ingame_StartNextWave
+    jsr     HandleInput
+
     .block
         #A8
         lda     wave_init_state
@@ -944,6 +946,8 @@ Ingame_StartNextWave
             ; draw player sprite
             SetMetasprite   PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
             
+            ; handle/bullets
+            jsr     UpdatePlayerBullets
     .bend
     rts
 
