@@ -396,6 +396,8 @@ Ingame_Loop
         lda     #0
         ora     WAVENUMBER_INIT
         sta     wave_init_state
+        lda     #60 ; wait sixty frames
+        sta     wavenumber_wait
 
         jsr     ClearBullets
 
@@ -952,8 +954,8 @@ Ingame_StartNextWave
     rts
 
 WavenumberInit
-    ; load wave number sprite
     #A8
+    ; load wave number sprite
     lda     current_wave
     clc
     asl     A
@@ -973,19 +975,28 @@ WavenumberInit
     lda     #0
     ora     WAVENUMBER_IN
     sta     wave_init_state
-    
+
     rts
 
 WavenumberScrollIn
     #A8
-    lda     wavenumber_pos_y
-    clc
-    adc     #2
-    cmp     #100
-    beq     _next
-    
-    sta     wavenumber_pos_y
+    lda     wavenumber_wait
+    sec
+    dec     A
+    bmi     _move
+
+    sta     wavenumber_wait
     jmp     _done
+
+    _move
+        lda     wavenumber_pos_y
+        clc
+        adc     #2
+        cmp     #100
+        beq     _next
+        
+        sta     wavenumber_pos_y
+        jmp     _done
 
     _next
         lda     #90                 ; wait 90 frames
