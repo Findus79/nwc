@@ -389,6 +389,7 @@ hdma_scroll_b       .dunion HLWord
     PatternTable .block
         .byte   `Pattern_Definitions
         .word   <>Pattern_0
+        .word   <>Pattern_1
     .bend
 
 .send
@@ -416,47 +417,47 @@ hdma_scroll_b       .dunion HLWord
         .byte   9          ; enemy count
 
         .byte   1           ; enemy type
-        .byte   5*8, 224    ; first enemy position x,y
+        .byte   120, 224    ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   7*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   11*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224   ; first enemy position x,y
+        .byte   120, 224   ; first enemy position x,y
         .byte   0           ; pattern index
         .word   15*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   19*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   23*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   27*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   31*8        ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   5*8, 224     ; first enemy position x,y
+        .byte   120, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   35*8        ; frame offset until start        
     .bend
@@ -482,6 +483,7 @@ hdma_scroll_b       .dunion HLWord
     Wave_14
     Wave_15
     Wave_16
+
     Wave_17
     Wave_18
     Wave_19
@@ -494,9 +496,10 @@ hdma_scroll_b       .dunion HLWord
     ; pattern definitions.
     ; 16 bit length, n x/y pairs.
     Pattern_Definitions
-        Pattern_0 .block
-            .binary     "../data/Patterns/test.pattern"
-        .bend
+        Pattern_0
+            .binary     "../data/Patterns/left_right.pattern"
+        Pattern_1
+            .binary     "../data/Patterns/right_left.pattern"
 .send
 
 .section secBank83

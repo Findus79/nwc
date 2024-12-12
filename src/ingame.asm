@@ -1165,17 +1165,55 @@ Ingame_MoveEnemy
     bcs     _remove_enemy
     sta     wtmp_1
     
-    ; move enemy
+    ; move enemy (something clumsy but.. meh)
     _move_enemy
         #A16
-        clc
-        lda     enemy_objects,X+1     
-        adc     wtmp_0
-        sta     enemy_objects,X+1
-        clc
-        lda     enemy_objects,X+3     
-        adc     wtmp_1
-        sta     enemy_objects,X+3
+        .block ; move x
+            lda     wtmp_0
+            bit     #$8000    ; highest bit set -> negative
+            beq     _minus
+            
+            _plus
+            clc
+            lda     enemy_objects,X+1
+            adc     wtmp_0
+            jmp     _store
+
+            _minus
+            lda     wtmp_0
+            and     #$7FFF  ; get rid of the negative flag
+            sta     wtmp_0
+            lda     enemy_objects,X+1
+            sec
+            sbc     wtmp_0
+
+            _store
+            sta     enemy_objects,X+1
+        .bend
+
+        .block ; move y
+            lda     wtmp_1
+            bit     #$8000    ; highest bit set -> negative
+            bne     _minus
+            
+            _plus
+            clc
+            lda     enemy_objects,X+3
+            adc     wtmp_1
+            jmp     _store
+
+            _minus
+            lda     wtmp_1
+            and     #$7FFF  ; get rid of the negative flag
+            sta     wtmp_1
+            lda     enemy_objects,X+3
+            sec
+            sbc     wtmp_1
+
+            _store
+            sta     enemy_objects,X+3
+        .bend
+        
         jmp     _next
 
     _remove_enemy
