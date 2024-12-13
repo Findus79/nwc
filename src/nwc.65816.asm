@@ -414,52 +414,47 @@ hdma_scroll_b       .dunion HLWord
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
     Wave_1  .block
-        .byte   9          ; enemy count
+        .byte   4          ; enemy count
 
         .byte   1           ; enemy type
-        .byte   120, 224    ; first enemy position x,y
+        .byte   32, 224    ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
+        .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   7*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
+        .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   11*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224   ; first enemy position x,y
+        .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
-        .word   15*8         ; frame offset until start
+        .word   15*8        ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
+        .byte   192, 224     ; first enemy position x,y
+        .byte   1           ; pattern index
         .word   19*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
+        .byte   192, 224     ; first enemy position x,y
+        .byte   1           ; pattern index
         .word   23*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
+        .byte   192, 224     ; first enemy position x,y
+        .byte   1           ; pattern index
         .word   27*8         ; frame offset until start
 
         .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   31*8        ; frame offset until start
-
-        .byte   1           ; enemy type
-        .byte   120, 224     ; first enemy position x,y
-        .byte   0           ; pattern index
-        .word   35*8        ; frame offset until start        
+        .byte   192, 224     ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   31*8        ; frame offset until start       
     .bend
     Wave_2 .block
         .byte   1          ; enemy count

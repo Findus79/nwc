@@ -1169,7 +1169,7 @@ Ingame_MoveEnemy
         .block ; move x
             lda     wtmp_0
             bit     #$8000    ; highest bit set -> negative
-            beq     _minus
+            bne     _minus
             
             _plus
             clc
@@ -1242,6 +1242,7 @@ Ingame_VBlank
             and     #1
             bne     _skip
 
+
             lda     reg_scroll_v_bg2
             dec     A
             and     #%0000000111111111
@@ -1249,7 +1250,7 @@ Ingame_VBlank
 
             clc
             lda     reg_scroll_v_bg1
-            sbc     #3
+            sbc     #4
             and     #%0000000111111111
             sta     reg_scroll_v_bg1
             
