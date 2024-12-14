@@ -535,6 +535,8 @@ HandleInput .block
 MovePlayer_Left .block
     #A16
     dec     reg_scroll_h_bg1
+    dec     reg_scroll_h_bg1
+    dec     reg_scroll_h_bg2
     sec
     lda     player_one.screenpos.x
     sbc     PLAYER_SPEED
@@ -549,6 +551,8 @@ MovePlayer_Left .block
 MovePlayer_Right .block
     #A16
     inc     reg_scroll_h_bg1
+    inc     reg_scroll_h_bg1
+    inc     reg_scroll_h_bg2
     clc
     lda     player_one.screenpos.x
     adc     PLAYER_SPEED
@@ -1145,7 +1149,6 @@ Ingame_LoadWave .block ; load new wave at start of enemy list; wave idx needs to
     sta     wave_state
     rts
 .bend
-
 
 Ingame_MoveEnemy .block
     #A16

@@ -8,8 +8,7 @@
 
 Titlescreen
 
-Titlescreen_OnEnter
-.block
+Titlescreen_OnEnter .block
     ; disable NMI
     #A8
     stz     $804200     ; disable NMI and auto-joypad
@@ -376,142 +375,140 @@ Titlescreen_OnEnter
     rts
 .bend
 
-Titlescreen_Main
-    .block
-        #A16
-        .block  ; handle input
-            clc
-            lda     pad_1_pressed
-            and     #PAD_START
-            bne     _exit
-
-            clc
-            lda     pad_1_pressed
-            and     #PAD_LEFT
-            bne     _scroll_logo_left
-
-            clc
-            lda     pad_1_pressed
-            and     #PAD_RIGHT
-            bne     _scroll_logo_right
-
-            clc
-            lda     pad_1_pressed
-            and     #PAD_Y
-            bne     _create_snowflake
-
-            jmp     _done
-
-            _scroll_logo_left
-                lda     #<>Titlescreen_LogoLeft
-                sta     gamestate_ptr
-                jmp     _done
-
-            _scroll_logo_right
-                lda     #<>Titlescreen_LogoRight
-                sta     gamestate_ptr
-                jmp     _done
-
-            _create_snowflake
-                jsr     Titlescreen_CreateSnowflake
-                jmp     _done
-
-            _exit
-                lda     #<>Titlescreen_FadeOut
-                sta     gamestate_ptr
-
-            _done
-        .bend
-
-        .block  ; handle snowflake sprites
-            #A8
-            jsr     ShadowOAM_Clear
-            jsr     SetOAMPtr
-
-            ldx #(31*5)             ; start with last bullet
-
-            _bullet_loop
-                #A8
-                lda player_bullets,X    ; load bullet flags
-                bit BULLET_IN_USE       ; 
-                beq _next_bullet      ; next/prev. bullet
-
-                _update_bullet
-                    #A16
-                    clc
-                    lda     player_bullets,X+3     ; load screenpos.y
-                    adc     #1
-                    sta     player_bullets,X+3     ; store new screenpos.y
-                    
-                _move_bullet              
-                    #A16
-                    lda     player_bullets,X+1      ; load x position
-                    sta     sprite_pos_x
-
-                    lda     player_bullets,X+3      ; load y position
-                    sta     sprite_pos_y
-                                        
-                    brk
-                    nop
-                    nop
-                    SetMetasprite   snowflake_small_a, sprite_pos_x, sprite_pos_y
-                    
-                _next_bullet
-                    #A16
-                    txa                 ; get current index
-                    beq _done           ; if 0 this was the last bullet to check --> done
-
-                    sec
-                    sbc #5              ; substract
-                    tax
-                    jmp _bullet_loop    ; next bullet
-            _done
-        .bend;
-        #AXY8
-    .bend
-
-    _done
-        rts
-
-Titlescreen_CreateSnowflake
-    .block
-        #A8
-        lda     next_bullet
-        tax
-        
-        lda     player_bullets,X
-        ora     BULLET_IN_USE
-        sta     player_bullets,X
-        
-        #A16
-        lda     current_frame
-        ora     #%0101010010101011
-        lsr
-        sta     player_bullets,X+1
-        
+Titlescreen_Main .block
+    #A16
+    .block  ; handle input
         clc
-        lda     #224
-        sta     player_bullets,X+3
+        lda     pad_1_pressed
+        and     #PAD_START
+        bne     _exit
 
-        #A8
-        lda     next_bullet
         clc
-        adc     #5
-        cmp     #(31*5)
-        bne     _next_bullet
+        lda     pad_1_pressed
+        and     #PAD_LEFT
+        bne     _scroll_logo_left
 
-        lda     #0
-        sta     next_bullet
+        clc
+        lda     pad_1_pressed
+        and     #PAD_RIGHT
+        bne     _scroll_logo_right
+
+        clc
+        lda     pad_1_pressed
+        and     #PAD_Y
+        bne     _create_snowflake
+
         jmp     _done
 
-        _next_bullet
-            sta next_bullet
+        _scroll_logo_left
+            lda     #<>Titlescreen_LogoLeft
+            sta     gamestate_ptr
+            jmp     _done
+
+        _scroll_logo_right
+            lda     #<>Titlescreen_LogoRight
+            sta     gamestate_ptr
+            jmp     _done
+
+        _create_snowflake
+            jsr     Titlescreen_CreateSnowflake
+            jmp     _done
+
+        _exit
+            lda     #<>Titlescreen_FadeOut
+            sta     gamestate_ptr
 
         _done
     .bend
-    rts
 
-Titlescreen_LogoLeft
+    .block  ; handle snowflake sprites
+        #A8
+        jsr     ShadowOAM_Clear
+        jsr     SetOAMPtr
+
+        ldx #(31*5)             ; start with last bullet
+
+        _bullet_loop
+            #A8
+            lda player_bullets,X    ; load bullet flags
+            bit BULLET_IN_USE       ; 
+            beq _next_bullet      ; next/prev. bullet
+
+            _update_bullet
+                #A16
+                clc
+                lda     player_bullets,X+3     ; load screenpos.y
+                adc     #1
+                sta     player_bullets,X+3     ; store new screenpos.y
+                
+            _move_bullet              
+                #A16
+                lda     player_bullets,X+1      ; load x position
+                sta     sprite_pos_x
+
+                lda     player_bullets,X+3      ; load y position
+                sta     sprite_pos_y
+                                    
+                brk
+                nop
+                nop
+                SetMetasprite   snowflake_small_a, sprite_pos_x, sprite_pos_y
+                
+            _next_bullet
+                #A16
+                txa                 ; get current index
+                beq _done           ; if 0 this was the last bullet to check --> done
+
+                sec
+                sbc #5              ; substract
+                tax
+                jmp _bullet_loop    ; next bullet
+        _done
+    .bend;
+    #AXY8
+    
+    _done
+    rts
+.bend
+
+Titlescreen_CreateSnowflake .block
+    #A8
+    lda     next_bullet
+    tax
+    
+    lda     player_bullets,X
+    ora     BULLET_IN_USE
+    sta     player_bullets,X
+    
+    #A16
+    lda     current_frame
+    ora     #%0101010010101011
+    lsr
+    sta     player_bullets,X+1
+    
+    clc
+    lda     #224
+    sta     player_bullets,X+3
+
+    #A8
+    lda     next_bullet
+    clc
+    adc     #5
+    cmp     #(31*5)
+    bne     _next_bullet
+
+    lda     #0
+    sta     next_bullet
+    jmp     _done
+
+    _next_bullet
+        sta next_bullet
+
+    _done
+    rts
+.bend
+
+Titlescreen_LogoLeft .block
     #A16
     lda     reg_scroll_h_bg1
     cmp     #$00
@@ -531,8 +528,9 @@ Titlescreen_LogoLeft
         
     _done
     rts
+.bend
 
-Titlescreen_LogoRight
+Titlescreen_LogoRight .block
     #A16
     lda     reg_scroll_h_bg1
     cmp     #$100
@@ -551,80 +549,79 @@ Titlescreen_LogoRight
 
     _done
     rts
+.bend
 
-Titlescreen_FadeIn
-    .block
-        #A16
-        lda     current_frame
-        and     #1
-        beq     _done
+Titlescreen_FadeIn .block
+    #A16
+    lda     current_frame
+    and     #1
+    beq     _done
 
+    #A8
+    clc
+    lda     reg_brightness
+    and     #%00001111
+    cmp     #$0F
+    beq     _exit
+
+    lda     reg_brightness
+    inc     A
+    and     #%00001111
+    sta     reg_brightness
+
+    lda     reg_mosaic
+    clc
+    sbc     #%00010000
+    ora     #%00001111
+    sta     reg_mosaic
+    jmp     _done
+
+    _exit
         #A8
-        clc
-        lda     reg_brightness
-        and     #%00001111
-        cmp     #$0F
-        beq     _exit
-
-        lda     reg_brightness
-        inc     A
-        and     #%00001111
-        sta     reg_brightness
-
-        lda     reg_mosaic
-        clc
-        sbc     #%00010000
-        ora     #%00001111
+        lda     #%00001111
         sta     reg_mosaic
-        jmp     _done
-
-        _exit
-            #A8
-            lda     #%00001111
-            sta     reg_mosaic
-            #A16
-            lda     #<>Titlescreen_Main
-            sta     gamestate_ptr
-
-        _done
-    .bend
-    rts
-
-Titlescreen_FadeOut
-    .block
         #A16
-        lda     current_frame
-        and     #1
-        beq     _done
+        lda     #<>Titlescreen_Main
+        sta     gamestate_ptr
 
-        #A8
-        clc
-        lda     reg_brightness
-        cmp     #$00
-        beq     _exit
-
-        lda     reg_brightness
-        dec     A
-        and     #%00001111
-        sta     reg_brightness
-
-        lda     reg_mosaic
-        clc
-        adc     #%00010000
-        sta     reg_mosaic
-
-        jmp     _done
-
-        _exit
-            #A16
-            lda     #<>Ingame_OnEnter
-            sta     gamestate_ptr
-
-        _done
-    .bend
+    _done
     rts
+.bend
 
-Titlescreen_VBlank
+Titlescreen_FadeOut .block
+    #A16
+    lda     current_frame
+    and     #1
+    beq     _done
+
+    #A8
+    clc
+    lda     reg_brightness
+    cmp     #$00
+    beq     _exit
+
+    lda     reg_brightness
+    dec     A
+    and     #%00001111
+    sta     reg_brightness
+
+    lda     reg_mosaic
+    clc
+    adc     #%00010000
+    sta     reg_mosaic
+
+    jmp     _done
+
+    _exit
+        #A16
+        lda     #<>Ingame_OnEnter
+        sta     gamestate_ptr
+
+    _done
+    rts
+.bend
+
+Titlescreen_VBlank .block
     phb
         .block  ; set hdma scroll values
             #A16
@@ -659,4 +656,4 @@ Titlescreen_VBlank
         jsr     PAD_READ
     plb
     rts
-
+.bend
