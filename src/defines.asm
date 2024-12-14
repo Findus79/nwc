@@ -2,6 +2,8 @@
 
 PLAYER_SPEED        = #384
 
+ENEMY_STRIDE        = 11
+
 ; bullet flags
 BULLET_IN_USE       = #%10000000
 BULLET_EXPLODING    = #%01000000

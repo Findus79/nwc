@@ -137,7 +137,7 @@ player_bullets .block   ; 16 bullets for the player at once for now.
 .bend
 
 enemy_objects .block
-    .fill   16*13        ; max of 16 enemies at once
+    .fill   16*11        ; max of 16 enemies at once
 .bend
 
 ; place hdma stuff
@@ -417,7 +417,7 @@ hdma_scroll_b       .dunion HLWord
         .byte   4          ; enemy count
 
         .byte   1           ; enemy type
-        .byte   32, 224    ; first enemy position x,y
+        .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
 
@@ -555,13 +555,12 @@ Bullet .struct  ; 5 bytes total
     .bend
 .ends
 
-Enemy .struct   ; 13 bytes total
+Enemy .struct   ; 11 bytes total
     flags           .byte       ?
     screenpos       .dstruct    ScreenPosition  ; (+1/3)
     sprite_ptr      .word       ?               ; (+5)  metasprite ptr
     pattern_ptr     .word       ?               ; (+7)  wave-pattern ptr
-    pattern_index   .word       ?               ; (+9)  index into wave-pattern (aka "animation" position)
-    frame_offset    .word       ?               ; (+11) frames until pattern playback starts
+    frame_offset    .word       ?               ; (+9) frames until pattern playback starts
 .ends
 
 .comment

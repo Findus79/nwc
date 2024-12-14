@@ -8,8 +8,7 @@
 
 Ingame
 
-Ingame_OnEnter
-.block
+Ingame_OnEnter .block
     ; disable NMI
     #A8
     stz     $804200     ; disable NMI and auto-joypad
@@ -315,7 +314,7 @@ Ingame_OnEnter
         #A8
         lda     #0
         #XY16
-        ldx     #(16*13)
+        ldx     #(16*ENEMY_STRIDE)
         _loop
             sta enemy_objects,X
             dex
@@ -365,7 +364,7 @@ Ingame_OnEnter
     rts
 .bend
 
-Ingame_Loop
+Ingame_Loop .block
     ; scroll backgrounds
     jsr     HandleInput
 
@@ -411,18 +410,14 @@ Ingame_Loop
         ; draw/update current enemy wave objects
         .block ; enemy object update
             
-            ldx #(15*13)            ; start loop again          
+            ldx #(15*ENEMY_STRIDE)            ; start loop again          
             _enemy_loop
                 ; preload some vars
                 #A8
                 lda     #`Pattern_Definitions   ; load pattern bank
-                sta     data_bnk                ; store pattern bank
                 sta     wave_pattern_bank       ; doppelt gemoppelt :D
 
                 #A16
-                lda     enemy_objects,X+7       ; load pattern address
-                sta     data_ptr                ; store
-
                 lda     enemy_objects,X+5       ; load sprite data ptr
                 sta     sprite_data_ptr
 
@@ -436,9 +431,9 @@ Ingame_Loop
 
                 #A16
                 clc
-                lda     enemy_objects,X+11  ; load wait counter
+                lda     enemy_objects,X+9   ; load wait counter
                 dec     A                   ;
-                sta     enemy_objects,X+11  ; store decremented counter
+                sta     enemy_objects,X+9   ; store decremented counter
                 bne     _next_enemy         ; not zero -> next enemy
 
                 #A8
@@ -448,7 +443,7 @@ Ingame_Loop
 
                 _update_enemy                       ; update enemy according to current set wave pattern
                     #A16
-                    lda     enemy_objects,X+9       ; load current pattern offset
+                    lda     enemy_objects,X+7       ; load current pattern offset
                     sta     wave_pattern_ptr
                     #A8
                     jsr     Ingame_MoveEnemy
@@ -483,7 +478,7 @@ Ingame_Loop
                     beq _done           ; if 0 this was the last enemy to check --> done
 
                     sec
-                    sbc #13              ; substract
+                    sbc #ENEMY_STRIDE              ; substract
                     tax
                     jmp _enemy_loop     ; next enemy
             _done
@@ -494,6 +489,7 @@ Ingame_Loop
 
     _done
         rts
+.bend
 
 HandleInput .block
     #A16    
@@ -536,8 +532,9 @@ HandleInput .block
     rts
 .bend
 
-MovePlayer_Left
+MovePlayer_Left .block
     #A16
+    dec     reg_scroll_h_bg1
     sec
     lda     player_one.screenpos.x
     sbc     PLAYER_SPEED
@@ -547,9 +544,11 @@ MovePlayer_Left
     _done
     sta     player_one.screenpos.x
     rts
+.bend
 
-MovePlayer_Right
+MovePlayer_Right .block
     #A16
+    inc     reg_scroll_h_bg1
     clc
     lda     player_one.screenpos.x
     adc     PLAYER_SPEED
@@ -560,8 +559,9 @@ MovePlayer_Right
     _done
     sta     player_one.screenpos.x
     rts
+.bend
 
-MovePlayer_Up
+MovePlayer_Up .block
     #A16
     sec
     lda     player_one.screenpos.y
@@ -572,8 +572,9 @@ MovePlayer_Up
     _done
     sta     player_one.screenpos.y
     rts
+.bend
 
-MovePlayer_Down
+MovePlayer_Down .block
     #A16
     clc
     lda     player_one.screenpos.y
@@ -585,7 +586,7 @@ MovePlayer_Down
     _done
     sta     player_one.screenpos.y
     rts
-
+.bend
 
 ShootSnowball .block
     #A8
@@ -623,7 +624,6 @@ ShootSnowball .block
     _done
     rts
 .bend
-    
 
 ClearBullets .block; clear bullets
     #A8
@@ -640,80 +640,78 @@ ClearBullets .block; clear bullets
     rts
 .bend
 
-UpdatePlayerBullets
-    .block ; player bullet update
-            
-        ldx #(31*5)             ; start with last bullet
+UpdatePlayerBullets .block ; player bullet update    
+    ldx #(31*5)             ; start with last bullet
 
-        _bullet_loop
+    _bullet_loop
+        #A8
+        lda player_bullets,X    ; load bullet flags
+        bit BULLET_IN_USE       ; 
+        beq _next_bullet      ; next/prev. bullet
+
+        _update_bullet
+            #A16
+            sec
+            lda     player_bullets,X+3     ; load screenpos.y
+            sbc     BULLET_SPEED
+            sta     player_bullets,X+3     ; store new screenpos.y
+
+        _check_offscreen
+            bcs     _move_bullet
+        
+        _remove_bullet
             #A8
-            lda player_bullets,X    ; load bullet flags
-            bit BULLET_IN_USE       ; 
-            beq _next_bullet      ; next/prev. bullet
+            lda     #0
+            sta     player_bullets,X
+            jmp     _next_bullet      
+        
+        _move_bullet              
+            #A8
+            lda     player_bullets,X+2      ; load x position
+            sta     sprite_pos_x
 
-            _update_bullet
-                #A16
-                sec
-                lda     player_bullets,X+3     ; load screenpos.y
-                sbc     BULLET_SPEED
-                sta     player_bullets,X+3     ; store new screenpos.y
-
-            _check_offscreen
-                bcs     _move_bullet
+            lda     player_bullets,X+4      ; load y position
+            sta     sprite_pos_y
+                                
+            SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
             
-            _remove_bullet
-                #A8
-                lda     #0
-                sta     player_bullets,X
-                jmp     _next_bullet      
-            
-            _move_bullet              
-                #A8
-                lda     player_bullets,X+2      ; load x position
-                sta     sprite_pos_x
-
-                lda     player_bullets,X+4      ; load y position
-                sta     sprite_pos_y
-                                    
-                SetMetasprite   Snowball, sprite_pos_x, sprite_pos_y
-                
-            _next_bullet
-                #A16
-                txa                 ; get current index
-                beq _done           ; if 0 this was the last bullet to check --> done
-
-                sec
-                sbc #5              ; substract
-                tax
-                jmp _bullet_loop    ; next bullet
-        _done
-    .bend
-    rts
-
-CheckCurrentWave
-    #A8
-    .block ; ; simple check if all enemies are dones (killed or end of wave animation)
-        ldx #(15*13)             ; start with last enemy
-        _enemy_check_loop
-
-            lda     enemy_objects,X     ; load enemy flags
-            bne     _done               ; if not zero -> someone is still alive -> early out
-
-            ; next enemy.
-            txa                         ; get current index
-            beq     _all_dead_or_gone   ; if 0 this was the last enemy to check --> all gone
+        _next_bullet
+            #A16
+            txa                 ; get current index
+            beq _done           ; if 0 this was the last bullet to check --> done
 
             sec
-            sbc     #13                 ; substract
+            sbc #5              ; substract
             tax
-            jmp     _enemy_check_loop   ; next enemy
-                
-        _all_dead_or_gone
-            rep     #$80                ; set zero flag
-
-        _done
-    .bend
+            jmp _bullet_loop    ; next bullet
+    _done
     rts
+.bend
+
+CheckCurrentWave .block
+    #A8
+    ; simple check if all enemies are dones (killed or end of wave animation)
+    ldx #(15*ENEMY_STRIDE)             ; start with last enemy
+    _enemy_check_loop
+
+        lda     enemy_objects,X     ; load enemy flags
+        bne     _done               ; if not zero -> someone is still alive -> early out
+
+        ; next enemy.
+        txa                         ; get current index
+        beq     _all_dead_or_gone   ; if 0 this was the last enemy to check --> all gone
+
+        sec
+        sbc     #ENEMY_STRIDE       ; substract
+        tax
+        jmp     _enemy_check_loop   ; next enemy
+            
+    _all_dead_or_gone
+        rep     #$80                ; set zero flag
+
+    _done
+    rts
+.bend
 
 CheckBulletsVsEnemies .block
     ; loop all active bullets
@@ -742,7 +740,7 @@ CheckBulletsVsEnemies .block
 
         .block  ; loop all active enemies
         phx 
-            ldx #(15*13)            ; start loop again          
+            ldx #(15*ENEMY_STRIDE)            ; start loop again          
             _enemy_loop
                 lda     enemy_objects,X     ; load flags
                 bit     ENEMY_ALIVE         ; skip if enemy is not alive
@@ -776,7 +774,7 @@ CheckBulletsVsEnemies .block
                     beq _done           ; if 0 this was the last enemy to check --> done
 
                     sec
-                    sbc #13              ; substract
+                    sbc #ENEMY_STRIDE              ; substract
                     tax
                     jmp _enemy_loop     ; next enemy
             _done            
@@ -799,159 +797,156 @@ CheckBulletsVsEnemies .block
     rts
 .bend
 
+Ingame_FadeIn .block
+    #A16
+    lda     current_frame
+    and     #1
+    beq     _done
 
-Ingame_FadeIn
-    .block
-        #A16
-        lda     current_frame
-        and     #1
-        beq     _done
+    #A8
+    clc
+    lda     reg_brightness
+    and     #%00001111
+    cmp     #$0F
+    beq     _exit
 
+    lda     reg_brightness
+    inc     A
+    and     #%00001111
+    sta     reg_brightness
+
+    lda     reg_mosaic
+    clc
+    sbc     #%00010000
+    ora     #%00001111
+    sta     reg_mosaic
+
+    jmp     _done
+
+    _exit
         #A8
-        clc
-        lda     reg_brightness
-        and     #%00001111
-        cmp     #$0F
-        beq     _exit
-
-        lda     reg_brightness
-        inc     A
-        and     #%00001111
-        sta     reg_brightness
-
-        lda     reg_mosaic
-        clc
-        sbc     #%00010000
-        ora     #%00001111
+        lda     #%00001111
         sta     reg_mosaic
-
-        jmp     _done
-
-        _exit
-            #A8
-            lda     #%00001111
-            sta     reg_mosaic
-            #A16
-            lda     #<>Ingame_MovePlayerToStartingPosition
-            sta     gamestate_ptr
-            ; set player pos and move him onscreen
-            lda     #223
-            sta     player_one.screenpos.y.hi
-        _done
-    .bend
-    rts
-
-Ingame_FadeOut
-    rts
-
-Ingame_MovePlayerToStartingPosition
-    .block
         #A16
-        jsr     ShadowOAM_Clear
-
-        #A8
-        clc
-        lda     player_one.screenpos.y.hi
-        dec     A
-        sta     player_one.screenpos.y.hi
-        cmp     #160
-        bne     _done
-
-        lda     #0
-        ora     WAVENUMBER_INIT
-        sta     wave_init_state
-
-        #A16
-        lda     #<>Ingame_StartNextWave
+        lda     #<>Ingame_MovePlayerToStartingPosition
         sta     gamestate_ptr
-
-        _done
-            #A8
-            jsr     SetOAMPtr   ; clear sprite shadow table
-            ; draw player sprite
-            SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
-    .bend
+        ; set player pos and move him onscreen
+        lda     #223
+        sta     player_one.screenpos.y.hi
+    _done
     rts
+.bend
 
-Ingame_StartNextWave
+Ingame_FadeOut .block
+    rts
+.bend
+
+Ingame_MovePlayerToStartingPosition .block
+    #A16
+    jsr     ShadowOAM_Clear
+
+    #A8
+    clc
+    lda     player_one.screenpos.y.hi
+    dec     A
+    sta     player_one.screenpos.y.hi
+    cmp     #160
+    bne     _done
+
+    lda     #0
+    ora     WAVENUMBER_INIT
+    sta     wave_init_state
+
+    #A16
+    lda     #<>Ingame_StartNextWave
+    sta     gamestate_ptr
+
+    _done
+        #A8
+        jsr     SetOAMPtr   ; clear sprite shadow table
+        ; draw player sprite
+        SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
+    rts
+.bend
+
+Ingame_StartNextWave .block
     jsr     HandleInput
 
-    .block
-        #A8
-        lda     wave_init_state
-        bit     WAVENUMBER_INIT
-        bne     _init
-        
-        bit     WAVENUMBER_IN
-        bne     _scroll_in
+    #A8
+    lda     wave_init_state
+    bit     WAVENUMBER_INIT
+    bne     _init
+    
+    bit     WAVENUMBER_IN
+    bne     _scroll_in
 
-        bit     WAVENUMBER_HOLD
-        bne     _hold
+    bit     WAVENUMBER_HOLD
+    bne     _hold
 
-        bit     WAVENUMBER_OUT
-        bne     _scroll_out
+    bit     WAVENUMBER_OUT
+    bne     _scroll_out
 
-        bit     WAVENUMBER_EXIT
-        bne     _exit
+    bit     WAVENUMBER_EXIT
+    bne     _exit
 
+    jmp     _done
+
+    _init
+        jsr     WavenumberInit
         jmp     _done
 
-        _init
-            jsr     WavenumberInit
-            jmp     _done
+    _scroll_in
+        jsr     WavenumberScrollIn
+        jmp     _done
 
-        _scroll_in
-            jsr     WavenumberScrollIn
-            jmp     _done
+    _hold
+        jsr     WavenumberHold
+        jmp     _done
 
-        _hold
-            jsr     WavenumberHold
-            jmp     _done
+    _scroll_out
+        jsr     WavenumberScrollOut
+        jmp     _done
 
-        _scroll_out
-            jsr     WavenumberScrollOut
-            jmp     _done
+    _exit
+        #A16
+        lda     #<>Ingame_Loop
+        sta     gamestate_ptr
+        
+        #A8
+        lda     current_wave
+        jsr     Ingame_LoadWave    
 
-        _exit
-            #A16
-            lda     #<>Ingame_Loop
-            sta     gamestate_ptr
-            
+        
+    _done
+        #A16
+        jsr     ShadowOAM_Clear         ; clear all sprites
+
+        #A8
+        jsr     SetOAMPtr           ; start at beginning
+        ; draw wave sprite number
+        _draw_wave_number .block ; draw sprite
             #A8
-            lda     current_wave
-            jsr     Ingame_LoadWave    
-    
-            
-        _done
-            #A16
-            jsr     ShadowOAM_Clear         ; clear all sprites
+            lda     #`Wavesprites    ; load src sprite bank
+            sta     tmp_0
+            #AXY16
+            lda     wavenumber_pos_x          ; load x pos to x
+            tax
+            lda     wavenumber_pos_y          ; load y pos to y
+            tay
+            lda     wtmp_0
+        
+            jsr     CopyMetasprite
+        .bend
 
-            #A8
-            jsr     SetOAMPtr           ; start at beginning
-            ; draw wave sprite number
-            _draw_wave_number .block ; draw sprite
-                #A8
-                lda     #`Wavesprites    ; load src sprite bank
-                sta     tmp_0
-                #AXY16
-                lda     wavenumber_pos_x          ; load x pos to x
-                tax
-                lda     wavenumber_pos_y          ; load y pos to y
-                tay
-                lda     wtmp_0
-            
-                jsr     CopyMetasprite
-            .bend
-
-            ; draw player sprite
-            SetMetasprite   PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
-            
-            ; handle/bullets
-            jsr     UpdatePlayerBullets
-    .bend
+        ; draw player sprite
+        SetMetasprite   PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
+        
+        ; handle/bullets
+        jsr     UpdatePlayerBullets
     rts
+.bend
 
-WavenumberInit
+WavenumberInit .block
     #A8
     ; load wave number sprite
     lda     current_wave
@@ -975,8 +970,9 @@ WavenumberInit
     sta     wave_init_state
 
     rts
+.bend
 
-WavenumberScrollIn
+WavenumberScrollIn .block
     #A8
     lda     wavenumber_wait
     sec
@@ -1005,8 +1001,9 @@ WavenumberScrollIn
 
     _done
     rts
+.bend
 
-WavenumberHold
+WavenumberHold .block
     #A8
     lda     wavenumber_wait
     dec     A
@@ -1022,8 +1019,9 @@ WavenumberHold
 
     _done
     rts
+.bend
 
-WavenumberScrollOut
+WavenumberScrollOut .block
     #A8
     lda     wavenumber_pos_y
     clc
@@ -1041,8 +1039,9 @@ WavenumberScrollOut
         
     _done
     rts
+.bend
 
-Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in A (8 bit)
+Ingame_LoadWave .block ; load new wave at start of enemy list; wave idx needs to be in A (8 bit)
     #A8
     pha
         lda     Wavetable   ; load wavetable bank
@@ -1117,13 +1116,11 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
                 sta     data_ptr_0
             plx
             sta     enemy_objects,X+7
-            ; set pattern index to 0
-            sta     enemy_objects,X+9
-
+            
             ; frame offset until start of wave "playback"
             #A16
             lda     [data_ptr], y
-            sta     enemy_objects,X+11
+            sta     enemy_objects,X+9
             iny     ; advance two bytes
             iny     ;
         .bend
@@ -1131,7 +1128,7 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
         ; advance to next enemy
         clc
         txa
-        adc     #13 ; enemy byte stride
+        adc     #ENEMY_STRIDE ; enemy byte stride
         tax
         
         #A8
@@ -1147,9 +1144,10 @@ Ingame_LoadWave ; load new wave at start of enemy list; wave idx needs to be in 
     ora     WAVE_ALIVE
     sta     wave_state
     rts
+.bend
 
 
-Ingame_MoveEnemy
+Ingame_MoveEnemy .block
     #A16
     lda     [wave_pattern_ptr]       ; load x movement
     cmp     #$aaaa
@@ -1227,12 +1225,13 @@ Ingame_MoveEnemy
         lda     wave_pattern_ptr        ; load offset
         clc
         adc     #2                      ; add four bytes (2 * 8.8)
-        sta     enemy_objects,X+9       ; store new value
+        sta     enemy_objects,X+7       ; store new value
 
     _done
     rts
+.bend
 
-Ingame_VBlank
+Ingame_VBlank .block
     phb
         _scrolling
 
@@ -1266,5 +1265,6 @@ Ingame_VBlank
             jsr     PAD_READ
     plb
     rts
+.bend
 
 
