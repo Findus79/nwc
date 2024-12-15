@@ -2,7 +2,7 @@
 
 PLAYER_SPEED        = #384
 
-ENEMY_STRIDE        = 12
+ENEMY_STRIDE        = 15
 
 ; bullet flags
 BULLET_IN_USE       = #%10000000
@@ -12,6 +12,8 @@ BULLET_SPEED        = #511
 ; enemy flags
 ENEMY_ALIVE         = #%10000000
 ENEMY_WAITING       = #%01000000
+ENEMY_INIT          = #%11000000
+
 ENEMY_EXPLODE       = #%00100000
 
 UNSET_ENEMY_WAITING = #%10111111

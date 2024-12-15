@@ -751,11 +751,13 @@ CheckBulletsVsEnemies .block
                 beq     _next_enemy         ; next/prev. enemy 
 
                 ; load enemy position
+                clc
                 lda     enemy_objects,X+2     ; load x-hi position
+                adc     enemy_objects,X+12    ; add hbox x offset
                 cmp     tmp_0
                 bcs     _next_enemy           ; if (tmp_0<left_sprite_border)
                 clc
-                adc     #16                   ; move check to right border
+                adc     enemy_objects,X+13    ; move check to right border (add hbox width)
                 cmp     tmp_0                  
                 bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
 
@@ -763,7 +765,7 @@ CheckBulletsVsEnemies .block
                 cmp     tmp_1
                 bcs     _next_enemy           ; if (tmp_0<left_sprite_border)
                 clc
-                adc     #16                   ; move check to right border
+                adc     enemy_objects,X+14    ; move check to lower hbox (add height)
                 cmp     tmp_1                  
                 bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
 
@@ -1082,8 +1084,7 @@ Ingame_LoadWave .block ; load new wave at start of enemy list; wave idx needs to
         #AXY8
         ; set enemy alive
         lda     enemy_objects, X
-        ora     ENEMY_WAITING
-        ora     ENEMY_ALIVE
+        ora     ENEMY_INIT
         sta     enemy_objects, X
         
         .block ; load enemy type
@@ -1134,11 +1135,26 @@ Ingame_LoadWave .block ; load new wave at start of enemy list; wave idx needs to
             sta     enemy_objects,X+9
             iny     ; advance two bytes
             iny     ;
+        .bend
 
-            ; load hitpoints
+        .block    ; load hitpoints
             #A8
             lda     [data_ptr],y
             sta     enemy_objects,X+11
+            iny
+        .bend
+
+        .block  ; load hitbox offset and size
+            lda     [data_ptr],Y        ; hbox offset x (max 16)
+            sta     enemy_objects,X+12
+            iny
+            
+            lda     [data_ptr],Y    ; hbox width
+            sta     enemy_objects,X+13
+            iny
+            
+            lda     [data_ptr],Y    ; hbox height
+            sta     enemy_objects,X+14
             iny
         .bend
 
