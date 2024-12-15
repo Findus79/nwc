@@ -387,6 +387,7 @@ Ingame_Loop .block
 
         ; so some collision checks
         jsr     CheckBulletsVsEnemies
+        jsr     CheckItemsVsPlayer
         
         ; check enemy wave status
         jsr     CheckCurrentWave
@@ -922,6 +923,70 @@ CheckBulletsVsEnemies .block
     rts
 .bend
 
+CheckItemsVsPlayer .block
+    ; loop all active items
+    ; check against player
+    ; remove item if it, add to score
+    ldx #(31*5)             ; start with last item
+
+    _item_loop
+        #A8
+        lda     collectible_object,X    ; load bullet flags
+        bit     BULLET_IN_USE    ; 
+        beq     _next_item       ; next/prev. item
+
+        ; load item screen position (take "middle pixel" only)
+        #A8
+        clc
+        lda     collectible_object,X+2  ; x position
+        adc     #4                      ; add 4 pixels
+        sta     tmp_0                   ;
+
+        clc
+        lda     collectible_object,X+4  ; y position (hi-byte only)
+        adc     #4                      ; add 4 pixels
+        sta     tmp_1                   ;
+
+        .block  ; check against player character
+            ; load player position
+            clc
+            lda     player_one.screenpos.x.hi    ; load x-hi position (screen position)
+            cmp     tmp_0
+            bcs     _done           ; if (tmp_0<left_sprite_border)
+            
+            clc
+            adc     #24                   ; move check to right border (add hbox width)
+            cmp     tmp_0                  
+            bcc     _done           ; if (tmp_0>right_sprite_border)
+
+            lda     player_one.screenpos.y.hi ; load y-hi position
+            cmp     tmp_1
+            bcs     _done           ; if (tmp_0<left_sprite_border)
+            
+            clc
+            adc     #32    ; move check to lower hbox (add height)
+            cmp     tmp_1                  
+            bcc     _done           ; if (tmp_0>right_sprite_border)
+
+            ; collect item
+            lda     #0
+            sta     collectible_object,X    ; remove it
+            
+            _done            
+        .bend
+
+        _next_item
+            txa                 ; get current index
+            beq _done           ; if 0 this was the last item to check --> done
+
+            sec
+            sbc #5              ; substract
+            tax
+            jmp _item_loop    ; next bullet
+    _done
+    rts
+.bend
+
 Ingame_FadeIn .block
     #A16
     lda     current_frame
@@ -1070,6 +1135,7 @@ Ingame_StartNextWave .block
         jsr     UpdatePlayerBullets
         ; handle items
         jsr     UpdateItems
+        jsr     CheckItemsVsPlayer
 
     rts
 .bend
