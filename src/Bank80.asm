@@ -557,6 +557,7 @@ oam_offset          .word   ?
 
 ; player bullet handling
 next_bullet         .byte   ?
+next_item           .byte   ?
 
 ; wave state
 wave_state          .byte   ?   ; alive, dead, etc...

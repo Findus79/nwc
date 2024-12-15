@@ -132,16 +132,16 @@ pad_3_repeat        .word   ?
 
 ; player data
 player_one          .dstruct Object
-player_bullets .block   ; 16 bullets for the player at once for now.
+player_bullets .block   ; 32 bullets for the player at once for now.
     .fill   32*5        ; 5 bytes per bullet
 .bend
 
 enemy_objects .block
-    .fill   16*11        ; max of 16 enemies at once
+    .fill   16*15       ; max of 16 enemies at once
 .bend
 
 collectible_object .block
-    .fill   16*5         ; like bullets but different ;)
+    .fill   32*5         ; like bullets but different ;)
 .bend
 
 ; place hdma stuff
@@ -409,6 +409,8 @@ hdma_scroll_b       .dunion HLWord
 
     snowflake_small_a   .binary "../data/Sprites/snowflake_small_a.metasprite"
     snowflake_medium_a  .binary "../data/Sprites/snowflake_medium_a.metasprite"
+
+    floppy  .binary "../data/Sprites/floppy.metasprite"
 
     Enemy_Sprites
         Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"

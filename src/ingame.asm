@@ -303,12 +303,14 @@ Ingame_OnEnter .block
     #A8
     lda     #0
     sta     next_bullet
+    sta     next_item
 
     lda     #2
     sta     player_one.speed
 
     ; clear all player bullets
     jsr     ClearBullets
+    jsr     ClearItems
 
     .block; clear enemy objects
         #A8
@@ -379,6 +381,9 @@ Ingame_Loop .block
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
+
+        ; handle items
+        jsr     UpdateItems
 
         ; so some collision checks
         jsr     CheckBulletsVsEnemies
@@ -629,6 +634,42 @@ ShootSnowball .block
     rts
 .bend
 
+SpawnItem .block
+    #A8
+    phx
+    phy
+        lda     next_item
+        tax
+        
+        lda     collectible_object,X
+        ora     BULLET_IN_USE
+        sta     collectible_object,X
+        
+        lda     tmp_0
+        sta     collectible_object,X+2
+        
+        lda     tmp_1
+        sta     collectible_object,X+4
+
+        lda     next_item
+        clc
+        adc     #5
+        cmp     #(31*5)
+        bne     _next_item
+
+        lda     #0
+        sta     next_item
+        jmp     _done
+
+        _next_item
+            sta next_item
+
+        _done
+    ply
+    plx
+    rts
+.bend
+
 ClearBullets .block; clear bullets
     #A8
     lda     #0;
@@ -640,6 +681,21 @@ ClearBullets .block; clear bullets
         bne _loop
     ; clear last element
     sta player_bullets,X
+    #AXY8
+    rts
+.bend
+
+ClearItems .block
+    #A8
+    lda     #0;
+    #XY16
+    ldx     #(31*5)
+    _loop
+        sta collectible_object,x
+        dex
+        bne _loop
+    ; clear last element
+    sta collectible_object,X
     #AXY8
     rts
 .bend
@@ -688,6 +744,55 @@ UpdatePlayerBullets .block ; player bullet update
             sbc #5              ; substract
             tax
             jmp _bullet_loop    ; next bullet
+    _done
+    rts
+.bend
+
+UpdateItems .block ; collectible item update    
+    ldx #(31*5)             ; start with last bullet
+
+    _item_loop
+        #A8
+        lda collectible_object,X    ; load item flags
+        bit BULLET_IN_USE       ; 
+        beq _next_item          ; next/prev. item
+
+        _update_item
+            #A16
+            clc
+            lda     collectible_object,X+3     ; load screenpos.y
+            adc     ITEM_SPEED
+            sta     collectible_object,X+3     ; store new screenpos.y
+
+        _check_offscreen
+            cmp     #$E000
+            bcc     _draw_item
+        
+        _remove_item
+            #A8
+            lda     #0
+            sta     collectible_object,X
+            jmp     _next_item      
+        
+        _draw_item              
+            #A8
+            lda     collectible_object,X+2      ; load x position
+            sta     sprite_pos_x
+
+            lda     collectible_object,X+4      ; load y position
+            sta     sprite_pos_y
+                                
+            SetMetasprite   floppy, sprite_pos_x, sprite_pos_y
+            
+        _next_item
+            #A16
+            txa                 ; get current index
+            beq _done           ; if 0 this was the last bullet to check --> done
+
+            sec
+            sbc #5              ; substract
+            tax
+            jmp _item_loop    ; next bullet
     _done
     rts
 .bend
@@ -780,6 +885,13 @@ CheckBulletsVsEnemies .block
                 _remove_enemy
                 lda     #0
                 sta     enemy_objects,X
+                ; spawn new item at enemy position
+                lda     enemy_objects,X+2     ; x position
+                sta     tmp_0
+                lda     enemy_objects,X+4     ; y position
+                sta     tmp_1
+                jsr     SpawnItem             ; spawn item at pos 
+
                 jmp     _done                 ; remove only one enemy at a time
 
                 _next_enemy
@@ -956,6 +1068,9 @@ Ingame_StartNextWave .block
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
+        ; handle items
+        jsr     UpdateItems
+
     rts
 .bend
 
@@ -1125,12 +1240,10 @@ Ingame_LoadWave .block ; load new wave at start of enemy list; wave idx needs to
 
                 #A16
                 lda     PatternTable,X
-                sta     data_ptr_0
             plx
             sta     enemy_objects,X+7
             
             ; frame offset until start of wave "playback"
-            #A16
             lda     [data_ptr], y
             sta     enemy_objects,X+9
             iny     ; advance two bytes
