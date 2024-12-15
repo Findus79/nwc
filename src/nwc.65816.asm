@@ -140,6 +140,10 @@ enemy_objects .block
     .fill   16*11        ; max of 16 enemies at once
 .bend
 
+collectible_object .block
+    .fill   16*5         ; like bullets but different ;)
+.bend
+
 ; place hdma stuff
 * = $7e4000
 hdma_scroll_a       .dunion HLWord
@@ -376,7 +380,7 @@ hdma_scroll_b       .dunion HLWord
         .word   <>Wave_1
         .word   <>Wave_2
         .word   <>Wave_1
-        .word   <>Wave_24
+        .word   <>Wave_2
     .bend
 
     EnemyTable .block
@@ -420,41 +424,49 @@ hdma_scroll_b       .dunion HLWord
         .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
+        .byte   3           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   7*8         ; frame offset until start
+        .byte   1           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   32, 224     ; first enemy position x,y
         .byte   0           ; pattern index
         .word   15*8        ; frame offset until start
+        .byte   1           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   192, 224     ; first enemy position x,y
         .byte   1           ; pattern index
         .word   19*8         ; frame offset until start
+        .byte   1           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   192, 224     ; first enemy position x,y
         .byte   1           ; pattern index
         .word   23*8         ; frame offset until start
+        .byte   1           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   192, 224     ; first enemy position x,y
         .byte   1           ; pattern index
         .word   27*8         ; frame offset until start
+        .byte   1           ; hitpoints
 
         .byte   1           ; enemy type
         .byte   192, 224     ; first enemy position x,y
         .byte   1           ; pattern index
-        .word   31*8        ; frame offset until start       
+        .word   31*8        ; frame offset until start
+        .byte   1           ; hitpoints    
     .bend
     Wave_2 .block
         .byte   1          ; enemy count
@@ -463,6 +475,7 @@ hdma_scroll_b       .dunion HLWord
         .byte   100, 224    ; first enemy position x,y
         .byte   0           ; pattern index
         .word   3*8         ; frame offset until start
+        .byte   3           ; hitpoints
     .bend
     Wave_3
     Wave_4
@@ -478,7 +491,6 @@ hdma_scroll_b       .dunion HLWord
     Wave_14
     Wave_15
     Wave_16
-
     Wave_17
     Wave_18
     Wave_19
@@ -555,12 +567,13 @@ Bullet .struct  ; 5 bytes total
     .bend
 .ends
 
-Enemy .struct   ; 11 bytes total
+Enemy .struct   ; 12 bytes total
     flags           .byte       ?
     screenpos       .dstruct    ScreenPosition  ; (+1/3)
     sprite_ptr      .word       ?               ; (+5)  metasprite ptr
     pattern_ptr     .word       ?               ; (+7)  wave-pattern ptr
     frame_offset    .word       ?               ; (+9) frames until pattern playback starts
+    hitpoints       .byte       ?               ; (+11)
 .ends
 
 .comment

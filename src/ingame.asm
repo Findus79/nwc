@@ -767,10 +767,17 @@ CheckBulletsVsEnemies .block
                 cmp     tmp_1                  
                 bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
 
-                ; enemy has been hit -> remove hit
+                ; enemy has been hit -> dec hitpoints and remove if required
+                lda     #0
+                sta     tmp_2                   ; remove bullet
+                lda     enemy_objects,X+11      ; load current hitpoints
+                dec     A
+                sta     enemy_objects,X+11
+                bne     _next_enemy
+
+                _remove_enemy
                 lda     #0
                 sta     enemy_objects,X
-                sta     tmp_2                 ; store 0 for bullet flag
                 jmp     _done                 ; remove only one enemy at a time
 
                 _next_enemy
@@ -1127,6 +1134,12 @@ Ingame_LoadWave .block ; load new wave at start of enemy list; wave idx needs to
             sta     enemy_objects,X+9
             iny     ; advance two bytes
             iny     ;
+
+            ; load hitpoints
+            #A8
+            lda     [data_ptr],y
+            sta     enemy_objects,X+11
+            iny
         .bend
 
         ; advance to next enemy
