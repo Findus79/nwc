@@ -326,7 +326,8 @@ Ingame_OnEnter .block
     .bend
 
     ; load first wave definition
-    stz     current_wave
+    lda     #0
+    sta     current_wave
 
     ; clear all sprites
     jsr     ShadowOAM_Clear
@@ -377,7 +378,7 @@ Ingame_Loop .block
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
         ; draw player sprite first (in front of everything else)
-        SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
+        DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
@@ -398,16 +399,29 @@ Ingame_Loop .block
         lda     current_wave
         inc     A
         sta     current_wave
-        lda     #0
-        ora     WAVENUMBER_INIT
-        sta     wave_init_state
-        lda     #60 ; wait sixty frames
-        sta     wavenumber_wait
+        cmp     #24             ; is this the last wave?
+        bne     _next_wave
 
         #A16
-        lda     #<>Ingame_StartNextWave
-        sta     gamestate_ptr
+            lda     #5*60
+            sta     wtmp_0  ; exit counter
+            lda     #<>Ingame_FinishedGame
+            sta     gamestate_ptr
         #A8
+
+        jmp     _done
+
+        _next_wave
+            lda     #0
+            ora     WAVENUMBER_INIT
+            sta     wave_init_state
+            lda     #60 ; wait sixty frames
+            sta     wavenumber_wait
+
+            #A16
+            lda     #<>Ingame_StartNextWave
+            sta     gamestate_ptr
+            #A8
 
         jmp     _done
 
@@ -533,6 +547,10 @@ HandleInput .block
         beq     _input_done
 
         jsr     ShootSnowball
+        ; play sfx
+        #AXY8
+        lda     #0
+        jsr     Play_SFX
     
     _input_done
     rts
@@ -876,6 +894,11 @@ CheckBulletsVsEnemies .block
                 bcc     _next_enemy           ; if (tmp_0>right_sprite_border)
 
                 ; enemy has been hit -> dec hitpoints and remove if required
+                ; play sfx
+                #AXY8
+                lda     #1
+                jsr     Play_SFX
+                
                 lda     #0
                 sta     tmp_2                   ; remove bullet
                 lda     enemy_objects,X+11      ; load current hitpoints
@@ -884,16 +907,8 @@ CheckBulletsVsEnemies .block
                 bne     _next_enemy
 
                 _remove_enemy
-                lda     #0
-                sta     enemy_objects,X
-                ; spawn new item at enemy position
-                lda     enemy_objects,X+2     ; x position
-                sta     tmp_0
-                lda     enemy_objects,X+4     ; y position
-                sta     tmp_1
-                jsr     SpawnItem             ; spawn item at pos 
-
-                jmp     _done                 ; remove only one enemy at a time
+                    jsr     RemoveEnemy
+                    jmp     _done                 ; remove only one enemy at a time
 
                 _next_enemy
                     txa                 ; get current index
@@ -920,6 +935,19 @@ CheckBulletsVsEnemies .block
             tax
             jmp _bullet_loop    ; next bullet
     _done
+    rts
+.bend
+
+RemoveEnemy .block
+    lda     #0
+    sta     enemy_objects,X
+    ; spawn new item at enemy position
+    lda     enemy_objects,X+2     ; x position
+    sta     tmp_0
+    lda     enemy_objects,X+4     ; y position
+    sta     tmp_1
+    jsr     SpawnItem             ; spawn item at pos
+
     rts
 .bend
 
@@ -971,7 +999,9 @@ CheckItemsVsPlayer .block
             ; collect item
             lda     #0
             sta     collectible_object,X    ; remove it
-            
+            lda     #2
+            jsr     Play_SFX
+
             _done            
         .bend
 
@@ -1028,6 +1058,35 @@ Ingame_FadeIn .block
 .bend
 
 Ingame_FadeOut .block
+    #A16
+    lda     current_frame
+    and     #1
+    beq     _done
+
+    #A8
+    clc
+    lda     reg_brightness
+    cmp     #$00
+    beq     _exit
+
+    lda     reg_brightness
+    dec     A
+    and     #%00001111
+    sta     reg_brightness
+
+    lda     reg_mosaic
+    clc
+    adc     #%00010000
+    sta     reg_mosaic
+
+    jmp     _done
+
+    _exit
+        #A16
+        lda     #<>Ingame_OnEnter
+        sta     gamestate_ptr
+
+    _done
     rts
 .bend
 
@@ -1055,7 +1114,7 @@ Ingame_MovePlayerToStartingPosition .block
         #A8
         jsr     SetOAMPtr   ; clear sprite shadow table
         ; draw player sprite
-        SetMetasprite PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
+        DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
     rts
 .bend
 
@@ -1129,7 +1188,7 @@ Ingame_StartNextWave .block
         .bend
 
         ; draw player sprite
-        SetMetasprite   PlayerNW, player_one.screenpos.x.hi, player_one.screenpos.y.hi
+        DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
@@ -1137,6 +1196,36 @@ Ingame_StartNextWave .block
         jsr     UpdateItems
         jsr     CheckItemsVsPlayer
 
+    rts
+.bend
+
+Ingame_FinishedGame .block
+    jsr     HandleInput
+
+    #A16
+    jsr     ShadowOAM_Clear         ; clear all sprites
+
+    #A8
+    jsr     SetOAMPtr           ; start at beginning
+    
+    ; draw player sprite
+    DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
+    
+    ; handle/bullets
+    jsr     UpdatePlayerBullets
+    ; handle items
+    jsr     UpdateItems
+    jsr     CheckItemsVsPlayer
+
+    #A16
+    dec     wtmp_0
+    bpl     _done
+
+    ; fade out and switch to exit screen
+    lda     #<>Ingame_FadeOut
+    sta     gamestate_ptr
+
+    _done
     rts
 .bend
 
@@ -1439,6 +1528,22 @@ Ingame_MoveEnemy .block
         sta     enemy_objects,X+7       ; store new value
 
     _done
+    rts
+.bend
+
+Play_SFX .block ; A sfx index
+    phx
+    phy
+        ldx     #127
+        ldy     #6
+        jsl     SFX_Play_Center
+    ply
+    plx
+
+    rts
+.bend
+
+Add_Points .block ; increment score
     rts
 .bend
 

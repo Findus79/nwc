@@ -322,12 +322,12 @@ Titlescreen_OnEnter .block
 
     ; init initial player selection
     #A16
-    lda     #$100
+    lda     #128
     sta     reg_scroll_h_bg1
-    lda     #<>PlayerNW
+    lda     #$0000
     sta     playersprite_addr
     #A8
-    lda     #`PlayerNW
+    lda     #$00
     sta     playersprite_bank
 
     .block ; init hdma table
@@ -381,7 +381,7 @@ Titlescreen_Main .block
         clc
         lda     pad_1_pressed
         and     #PAD_START
-        bne     _exit
+        bne     _start_game
 
         clc
         lda     pad_1_pressed
@@ -413,6 +413,10 @@ Titlescreen_Main .block
         _create_snowflake
             jsr     Titlescreen_CreateSnowflake
             jmp     _done
+
+        _start_game
+            lda     playersprite_addr
+            beq     _done
 
         _exit
             lda     #<>Titlescreen_FadeOut
@@ -525,7 +529,12 @@ Titlescreen_LogoLeft .block
         lda     #<>Titlescreen_Main
         sta     gamestate_ptr
 
-        
+        ; select player sprite
+        lda     #<>PlayerSF
+        sta     playersprite_addr
+        #A8
+        lda     #`PlayerSF
+        sta     playersprite_bank
     _done
     rts
 .bend
@@ -546,6 +555,12 @@ Titlescreen_LogoRight .block
         sta     reg_scroll_h_bg1        ; just to be safe
         lda     #<>Titlescreen_Main
         sta     gamestate_ptr
+
+        lda     #<>PlayerNW
+        sta     playersprite_addr
+        #A8
+        lda     #`PlayerNW
+        sta     playersprite_bank
 
     _done
     rts

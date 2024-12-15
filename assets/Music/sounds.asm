@@ -1,10 +1,13 @@
 ;this file generated with SNES GSS tool
 
+.define SFX_UNTITLED	0
+.define SFX_UNTITLED	1
+.define SFX_UNTITLED	2
 
 .define MUS_UNTITLED	0
 
 .section ".roDataSoundCode1" superfree
-spc700_code_1:	.incbin "spc700.bin" skip 0 read 19294
+spc700_code_1:	.incbin "spc700.bin" skip 0 read 23554
 spc700_code_2:
 .ends
 

@@ -1,8 +1,24 @@
 //this file generated with SNES GSS tool
 
-#define SOUND_EFFECTS_ALL	0
+#define SOUND_EFFECTS_ALL	3
 
 #define MUSIC_ALL	1
+
+//sound effect aliases
+
+enum {
+	SFX_UNTITLED=0,
+	SFX_UNTITLED=1,
+	SFX_UNTITLED=2
+};
+
+//sound effect names
+
+const char* const soundEffectsNames[SOUND_EFFECTS_ALL]={
+	"UNTITLED",	//0
+	"UNTITLED",	//1
+	"UNTITLED"	//2
+};
 
 //music effect aliases
 

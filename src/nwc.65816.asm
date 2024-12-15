@@ -144,6 +144,9 @@ collectible_object .block
     .fill   32*5         ; like bullets but different ;)
 .bend
 
+; player scoring (BCD)
+player_score        .word   ?
+
 ; place hdma stuff
 * = $7e4000
 hdma_scroll_a       .dunion HLWord
@@ -413,9 +416,10 @@ hdma_scroll_b       .dunion HLWord
     floppy  .binary "../data/Sprites/floppy.metasprite"
 
     Enemy_Sprites
-        Enemy_0         .binary "../data/Sprites/gingerbreadman.metasprite"
-        Enemy_1         .binary "../data/Sprites/ufo_elf.metasprite"
-        Enemy_2         .binary "../data/Sprites/santa.metasprite"
+        Enemy_0         .binary "../data/Sprites/ufo_elf.metasprite"
+        Enemy_1         .binary "../data/Sprites/ufo_elf_alt.metasprite"
+        Enemy_2         .binary "../data/Sprites/gingerbreadman.metasprite"
+        Enemy_3         .binary "../data/Sprites/santa.metasprite"
 
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
