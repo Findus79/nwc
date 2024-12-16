@@ -304,6 +304,7 @@ Ingame_OnEnter .block
     lda     #0
     sta     next_bullet
     sta     next_item
+    sta     next_enemy_bullet
 
     lda     #2
     sta     player_one.speed
@@ -382,13 +383,14 @@ Ingame_Loop .block
         
         ; handle/bullets
         jsr     UpdatePlayerBullets
-
+        
         ; handle items
         jsr     UpdateItems
 
         ; so some collision checks
         jsr     CheckBulletsVsEnemies
         jsr     CheckItemsVsPlayer
+        jsr     CheckBulletsVsPlayer
         
         ; check enemy wave status
         jsr     CheckCurrentWave
@@ -467,8 +469,7 @@ Ingame_Loop .block
                     sta     wave_pattern_ptr
                     #A8
                     jsr     Ingame_MoveEnemy
-                    
-
+                                        
                 _draw_enemy
                     .block ; draw sprite
                         pha
@@ -503,6 +504,8 @@ Ingame_Loop .block
                     jmp _enemy_loop     ; next enemy
             _done
         .bend
+
+        jsr     UpdateEnemyBullets
 
         _done
     .bend
@@ -689,17 +692,67 @@ SpawnItem .block
     rts
 .bend
 
-ClearBullets .block; clear bullets
+SpawnEnemyBullet .block
     #A8
-    lda     #0;
-    #XY16
-    ldx     #(31*5)
-    _loop
-        sta player_bullets,x
-        dex
-        bne _loop
-    ; clear last element
-    sta player_bullets,X
+    phx
+    phy
+        lda     next_enemy_bullet
+        tax
+        
+        lda     enemy_bullets,X
+        ora     BULLET_IN_USE
+        sta     enemy_bullets,X
+        
+        lda     tmp_0
+        sta     enemy_bullets,X+2
+        
+        lda     tmp_1
+        sta     enemy_bullets,X+4
+
+        lda     next_enemy_bullet
+        clc
+        adc     #5
+        cmp     #(31*5)
+        bne     _next_item
+
+        lda     #0
+        sta     next_enemy_bullet
+        jmp     _done
+
+        _next_item
+            sta next_enemy_bullet
+
+        _done
+    ply
+    plx
+    rts
+.bend
+
+ClearBullets .block; clear bullets
+    .block ; player
+        #A8
+        lda     #0;
+        #XY16
+        ldx     #(31*5)
+        _loop
+            sta player_bullets,x
+            dex
+            bne _loop
+        ; clear last element
+        sta player_bullets,X
+    .bend
+    .block ; enemy
+        #AXY8
+        lda     #0;
+        #XY16
+        ldx     #(31*5)
+        _loop
+            sta enemy_bullets,x
+            dex
+            bne _loop
+        ; clear last element
+        sta enemy_bullets,X
+    .bend
     #AXY8
     rts
 .bend
@@ -763,6 +816,55 @@ UpdatePlayerBullets .block ; player bullet update
             sbc #5              ; substract
             tax
             jmp _bullet_loop    ; next bullet
+    _done
+    rts
+.bend
+
+UpdateEnemyBullets .block ;   
+    ldx #(31*5)             ; start with last bullet
+
+    _item_loop
+        #A8
+        lda enemy_bullets,X    ; load item flags
+        bit BULLET_IN_USE       ; 
+        beq _next_item          ; next/prev. item
+
+        _update_item
+            #A16
+            clc
+            lda     enemy_bullets,X+3     ; load screenpos.y
+            adc     BULLET_SPEED
+            sta     enemy_bullets,X+3     ; store new screenpos.y
+
+        _check_offscreen
+            cmp     #$E000
+            bcc     _draw_item
+        
+        _remove_item
+            #A8
+            lda     #0
+            sta     enemy_bullets,X
+            jmp     _next_item      
+        
+        _draw_item              
+            #A8
+            lda     enemy_bullets,X+2      ; load x position
+            sta     sprite_pos_x
+
+            lda     enemy_bullets,X+4      ; load y position
+            sta     sprite_pos_y
+                                
+            SetMetasprite   Snowball_E, sprite_pos_x, sprite_pos_y
+            
+        _next_item
+            #A16
+            txa                 ; get current index
+            beq _done           ; if 0 this was the last bullet to check --> done
+
+            sec
+            sbc #5              ; substract
+            tax
+            jmp _item_loop    ; next bullet
     _done
     rts
 .bend
@@ -1017,6 +1119,72 @@ CheckItemsVsPlayer .block
     rts
 .bend
 
+CheckBulletsVsPlayer .block
+    ; loop all active items
+    ; check against player
+    ; remove item if it, add to score
+    ldx #(31*5)             ; start with last item
+
+    _bullet_loop
+        #A8
+        lda     enemy_bullets,X    ; load bullet flags
+        bit     BULLET_IN_USE      ; 
+        beq     _next_bullet       ; next/prev. item
+
+        ; load item screen position (take "middle pixel" only)
+        #A8
+        clc
+        lda     enemy_bullets,X+2       ; x position
+        adc     #4                      ; add 4 pixels
+        sta     tmp_0                   ;
+
+        clc
+        lda     enemy_bullets,X+4  ; y position (hi-byte only)
+        adc     #4                      ; add 4 pixels
+        sta     tmp_1                   ;
+
+        .block  ; check against player character
+            ; load player position
+            clc
+            lda     player_one.screenpos.x.hi    ; load x-hi position (screen position)
+            cmp     tmp_0
+            bcs     _done           ; if (tmp_0<left_sprite_border)
+            
+            clc
+            adc     #24                   ; move check to right border (add hbox width)
+            cmp     tmp_0                  
+            bcc     _done           ; if (tmp_0>right_sprite_border)
+
+            lda     player_one.screenpos.y.hi ; load y-hi position
+            cmp     tmp_1
+            bcs     _done           ; if (tmp_0<left_sprite_border)
+            
+            clc
+            adc     #32    ; move check to lower hbox (add height)
+            cmp     tmp_1                  
+            bcc     _done           ; if (tmp_0>right_sprite_border)
+
+            ; player hit by bullet
+            lda     #0
+            sta     enemy_bullets,X    ; remove it
+            lda     #2
+            jsr     Play_SFX
+
+            _done            
+        .bend
+
+        _next_bullet
+            txa                 ; get current index
+            beq _done           ; if 0 this was the last item to check --> done
+
+            sec
+            sbc #5              ; substract
+            tax
+            jmp _bullet_loop    ; next bullet
+    _done
+    rts
+.bend
+
 Ingame_FadeIn .block
     #A16
     lda     current_frame
@@ -1083,7 +1251,7 @@ Ingame_FadeOut .block
 
     _exit
         #A16
-        lda     #<>Ingame_OnEnter
+        lda     #<>Endscreen_OnEnter
         sta     gamestate_ptr
 
     _done
@@ -1510,6 +1678,19 @@ Ingame_MoveEnemy .block
             sta     enemy_objects,X+3
         .bend
         
+        ; check if we should fire a bullet
+        #A8
+        lda     player_one.screenpos.x.hi
+        cmp     enemy_objects,X+2
+        bne     _next
+
+        lda     enemy_objects,X+2
+        clc
+        adc     #4
+        sta     tmp_0
+        lda     enemy_objects,X+4
+        sta     tmp_1
+        jsr     SpawnEnemyBullet
         jmp     _next
 
     _remove_enemy

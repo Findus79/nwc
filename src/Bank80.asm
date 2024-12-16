@@ -193,6 +193,7 @@ Game_Loop_Wait
 ;.include "spc.asm"
 .include "titlescreen.asm"
 .include "ingame.asm"
+.include "endscreen.asm"
 .include "music/music.asm"
 
 DMAZero .word   $0000
@@ -558,6 +559,7 @@ oam_offset          .word   ?
 ; player bullet handling
 next_bullet         .byte   ?
 next_item           .byte   ?
+next_enemy_bullet   .byte   ?
 
 ; wave state
 wave_state          .byte   ?   ; alive, dead, etc...

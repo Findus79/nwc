@@ -132,8 +132,13 @@ pad_3_repeat        .word   ?
 
 ; player data
 player_one          .dstruct Object
+
 player_bullets .block   ; 32 bullets for the player at once for now.
     .fill   32*5        ; 5 bytes per bullet
+.bend
+
+enemy_bullets .block    ; 32 bullets from enemies
+    .fill   32*5
 .bend
 
 enemy_objects .block
@@ -293,6 +298,25 @@ hdma_scroll_b       .dunion HLWord
         .word   len(binary("../data/Sprites/Sprites.tiles"))
     .bend
 
+    EndscreenData
+    .block
+        ; bank
+        ; address
+        ; size
+        
+        .byte   `EndscreenPalette
+        .word   <>EndscreenPalette
+        .word   len(binary("../data/Endscreen/endscreen.palette"))
+
+        .byte   `EndscreenTiles
+        .word   <>EndscreenTiles
+        .word   len(binary("../data/Endscreen/endscreen.tiles"))
+
+        .byte   `EndscreenMap_FG
+        .word   <>EndscreenMap_FG
+        .word   len(binary("../data/Endscreen/endscreen.map"))
+    .bend
+
     IngamePalette   .binary "../data/Ingame/Ingame.palette"
     IngameTiles     .binary "../data/Ingame/Foreground.tiles"
     IngameMap_BG    .binary "../data/Ingame/Background.map"
@@ -304,6 +328,7 @@ hdma_scroll_b       .dunion HLWord
     PlayerSF        .binary "../data/Sprites/Player_SF.metasprite"
     PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
     Snowball        .binary "../data/Sprites/snowball.metasprite"
+    Snowball_E      .binary "../data/Sprites/snowball_e.metasprite"
 
     Wavenumbers
         .word   <>wave_spr_1
@@ -409,6 +434,10 @@ hdma_scroll_b       .dunion HLWord
 
     TitlescreenSpritePalette   .binary "../data/Sprites/snowflakes.palette"
     TitlescreenSpriteTiles     .binary "../data/Sprites/snowflakes.tiles"
+
+    EndscreenPalette    .binary "../data/Endscreen/endscreen.palette"
+    EndscreenTiles      .binary "../data/Endscreen/endscreen.tiles"
+    EndscreenMap_FG     .binary "../data/Endscreen/endscreen.map"
 
     snowflake_small_a   .binary "../data/Sprites/snowflake_small_a.metasprite"
     snowflake_medium_a  .binary "../data/Sprites/snowflake_medium_a.metasprite"

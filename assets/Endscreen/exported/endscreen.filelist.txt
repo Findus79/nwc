@@ -1,2 +1,2 @@
-endscreen.png
-D:\Projekte\Christmas\assets\Endscreen\exported\endscreen.endscreen.layer-endscreen.map001.json
+Endscreen.png
+D:\Projekte\Christmas\assets\Endscreen\exported\Endscreen.Endscreen.layer-endscreen.map001.json
