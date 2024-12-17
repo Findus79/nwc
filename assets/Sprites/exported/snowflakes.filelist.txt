@@ -1,3 +1,0 @@
-snowflakes.png
-D:\Projekte\Christmas\assets\Sprites\exported\snowflakes.Snowflakes.layer-snowflake_small_a.map001.json
-D:\Projekte\Christmas\assets\Sprites\exported\snowflakes.Snowflakes_M.layer-snowflake_medium_a.map001.json

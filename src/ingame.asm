@@ -291,7 +291,8 @@ Ingame_OnEnter .block
     .bend
     
     #A16
-    ; reset scrolling registers
+    lda     #$0000
+    sta     player_score
 
     ; setup player data
     #A8
@@ -305,7 +306,7 @@ Ingame_OnEnter .block
     sta     next_bullet
     sta     next_item
     sta     next_enemy_bullet
-
+    
     lda     #2
     sta     player_one.speed
 
@@ -378,6 +379,10 @@ Ingame_Loop .block
 
         #A8
         jsr SetOAMPtr   ; clear sprite shadow table
+
+        ; draw score on top using sprites
+        jsr     DrawScore
+
         ; draw player sprite first (in front of everything else)
         DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
         
@@ -1053,6 +1058,9 @@ RemoveEnemy .block
     rts
 .bend
 
+DrawScore .block
+.bend
+
 CheckItemsVsPlayer .block
     ; loop all active items
     ; check against player
@@ -1103,6 +1111,7 @@ CheckItemsVsPlayer .block
             sta     collectible_object,X    ; remove it
             lda     #2
             jsr     Play_SFX
+            jsr     Add_Points              ; scoring
 
             _done            
         .bend
@@ -1399,6 +1408,8 @@ Ingame_FinishedGame .block
 
 WavenumberInit .block
     #A8
+    jsr     ClearBullets
+    
     ; load wave number sprite
     lda     current_wave
     clc
@@ -1725,6 +1736,19 @@ Play_SFX .block ; A sfx index
 .bend
 
 Add_Points .block ; increment score
+    php
+    #A16
+    sed     ; switch to decimal mode
+    clc
+    lda     player_score
+    adc     #1      ; add one disk
+    sta     player_score
+    brk
+    nop
+    nop
+    cld     ; back to binary
+    #A8
+    plp
     rts
 .bend
 

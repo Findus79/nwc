@@ -330,6 +330,18 @@ hdma_scroll_b       .dunion HLWord
     Snowball        .binary "../data/Sprites/snowball.metasprite"
     Snowball_E      .binary "../data/Sprites/snowball_e.metasprite"
 
+    Digits
+        .word   <>digit_0
+        .word   <>digit_1
+        .word   <>digit_2
+        .word   <>digit_3
+        .word   <>digit_4
+        .word   <>digit_5
+        .word   <>digit_6
+        .word   <>digit_7
+        .word   <>digit_8
+        .word   <>digit_9
+
     Wavenumbers
         .word   <>wave_spr_1
         .word   <>wave_spr_2
@@ -356,6 +368,18 @@ hdma_scroll_b       .dunion HLWord
         .word   <>wave_spr_23
         .word   <>wave_spr_24
     
+    Digitsprites
+        digit_0    .binary "../data/Sprites/digit_0.metasprite"
+        digit_1    .binary "../data/Sprites/digit_1.metasprite"
+        digit_2    .binary "../data/Sprites/digit_2.metasprite"
+        digit_3    .binary "../data/Sprites/digit_3.metasprite"
+        digit_4    .binary "../data/Sprites/digit_4.metasprite"
+        digit_5    .binary "../data/Sprites/digit_5.metasprite"
+        digit_6    .binary "../data/Sprites/digit_6.metasprite"
+        digit_7    .binary "../data/Sprites/digit_7.metasprite"
+        digit_8    .binary "../data/Sprites/digit_8.metasprite"
+        digit_9    .binary "../data/Sprites/digit_9.metasprite"
+
     Wavesprites
         wave_spr_1      .binary "../data/Sprites/wave_01.metasprite"
         wave_spr_2      .binary "../data/Sprites/wave_02.metasprite"
@@ -528,11 +552,20 @@ hdma_scroll_b       .dunion HLWord
         .byte   16          ; hbox height
     .bend
     Wave_2 .block
-        .byte   1          ; enemy count
+        .byte   2          ; enemy count
 
         .byte   2           ; enemy type
         .byte   100, 224    ; first enemy position x,y
         .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   160, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
         .word   3*8         ; frame offset until start
         .byte   3           ; hitpoints
         .byte   8           ; hbox offset x
