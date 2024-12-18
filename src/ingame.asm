@@ -1910,11 +1910,8 @@ Add_Points .block ; increment score
     sed     ; switch to decimal mode
     clc
     lda     player_score
-    adc     #1      ; add one disk
+    adc     #10      ; add one disk
     sta     player_score
-    brk
-    nop
-    nop
     cld     ; back to binary
     #A8
     plp
