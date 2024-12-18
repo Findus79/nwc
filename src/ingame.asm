@@ -310,6 +310,9 @@ Ingame_OnEnter .block
     lda     #2
     sta     player_one.speed
 
+    lda     #3
+    sta     player_lives
+
     ; clear all player bullets
     jsr     ClearBullets
     jsr     ClearItems
@@ -382,6 +385,7 @@ Ingame_Loop .block
 
         ; draw score on top using sprites
         jsr     DrawScore
+        jsr     DrawLives
 
         ; draw player sprite first (in front of everything else)
         DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
@@ -1059,6 +1063,163 @@ RemoveEnemy .block
 .bend
 
 DrawScore .block
+    #A8
+    lda     #5
+    sta     sprite_pos_x
+    sta     sprite_pos_y
+
+    SetMetasprite score, sprite_pos_x, sprite_pos_y
+
+    ; 21 29 37 45
+    phx
+    phy
+        .block
+            #A16
+            lda     player_score
+            sta     wtmp_1
+            and     #$000F
+            #A8
+            asl     A
+            tax
+            #A16
+            lda     Digits,X            ; load sprite digit ptr.
+            sta     sprite_data_ptr
+
+            lda     #`Digits    ; load src sprite bank
+            sta     tmp_0
+            #A8
+            #XY8
+            lda     sprite_pos_y     ; load y-hi pos to y
+            tay
+            lda     #49     ; load x-hi pos to x
+            tax
+            #A16
+            lda     sprite_data_ptr  
+
+            jsr     CopyMetasprite
+        .bend
+        .block
+            #A16
+            lda     wtmp_1
+            lsr
+            lsr
+            lsr
+            lsr
+            clc
+            sta     wtmp_1
+            and     #$000F
+            #A8
+            asl     A
+            tax
+            #A16
+            lda     Digits,X            ; load sprite digit ptr.
+            sta     sprite_data_ptr
+
+            lda     #`Digits    ; load src sprite bank
+            sta     tmp_0
+            #A8
+            #XY8
+            lda     sprite_pos_y     ; load y-hi pos to y
+            tay
+            lda     #40     ; load x-hi pos to x
+            tax
+            #A16
+            lda     sprite_data_ptr  
+
+            jsr     CopyMetasprite
+        .bend
+        .block
+            #A16
+            lda     wtmp_1
+            lsr
+            lsr
+            lsr
+            lsr
+            clc
+            sta     wtmp_1
+            and     #$000F
+            #A8
+            asl     A
+            tax
+            #A16
+            lda     Digits,X            ; load sprite digit ptr.
+            sta     sprite_data_ptr
+
+            lda     #`Digits    ; load src sprite bank
+            sta     tmp_0
+            #A8
+            #XY8
+            lda     sprite_pos_y     ; load y-hi pos to y
+            tay
+            lda     #31     ; load x-hi pos to x
+            tax
+            #A16
+            lda     sprite_data_ptr  
+
+            jsr     CopyMetasprite
+        .bend
+        .block
+            #A16
+            lda     wtmp_1
+            lsr
+            lsr
+            lsr
+            lsr
+            clc
+            sta     wtmp_1
+            and     #$000F
+            #A8
+            asl     A
+            tax
+            #A16
+            lda     Digits,X            ; load sprite digit ptr.
+            sta     sprite_data_ptr
+
+            lda     #`Digits    ; load src sprite bank
+            sta     tmp_0
+            #A8
+            #XY8
+            lda     sprite_pos_y     ; load y-hi pos to y
+            tay
+            lda     #22     ; load x-hi pos to x
+            tax
+            #A16
+            lda     sprite_data_ptr  
+
+            jsr     CopyMetasprite
+        .bend
+        #A8
+    ply
+    plx
+
+    rts
+.bend
+
+DrawLives .block
+    phx
+    phy
+        #A8
+        lda     #235
+        sta     sprite_pos_x
+        lda     #5
+        sta     sprite_pos_y
+
+        lda     player_lives
+        tax
+        
+        _loop_lives
+            SetMetasprite sled_symbol, sprite_pos_x, sprite_pos_y
+            lda     sprite_pos_x
+            sec
+            sbc     #16
+            sta     sprite_pos_x
+
+            dex
+            bne     _loop_lives
+    ply
+    plx
+    #A16
+    rts
 .bend
 
 CheckItemsVsPlayer .block
@@ -1178,6 +1339,10 @@ CheckBulletsVsPlayer .block
             sta     enemy_bullets,X    ; remove it
             lda     #2
             jsr     Play_SFX
+
+            ;lda     player_lives
+            ;dec     A
+            ;sta     player_lives
 
             _done            
         .bend
@@ -1349,6 +1514,10 @@ Ingame_StartNextWave .block
 
         #A8
         jsr     SetOAMPtr           ; start at beginning
+        ; draw score
+        jsr     DrawScore
+        jsr     DrawLives
+
         ; draw wave sprite number
         _draw_wave_number .block ; draw sprite
             #A8

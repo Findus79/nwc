@@ -42,3 +42,5 @@ D:\Projekte\Christmas\assets\Sprites\exported\sprites.digits.layer-digit_3.map00
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.digits.layer-digit_2.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.digits.layer-digit_1.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.digits.layer-digit_0.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.Floppy_Big.layer-sled_symbol.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.Floppy_Big.layer-score_symbol.map001.json

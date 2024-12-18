@@ -9,6 +9,8 @@ call "D:\Projekte\nintentool\bin\nintentool.exe" --inputdir %1 --project %2 --ta
  --spritelayer name=ufo_elf tileoffset=0 bpp=4 ^
  --spritelayer name=ufo_elf_alt tileoffset=0 bpp=4 ^
  --spritelayer name=floppy tileoffset=0 bpp=4 ^
+ --spritelayer name=score_symbol tileoffset=0 bpp=4 ^
+ --spritelayer name=sled_symbol tileoffset=0 bpp=4 ^
  --spritelayer name=santa tileoffset=0 bpp=4 ^
  --spritelayer name=digit_0 tileoffset=0 bpp=4 ^
  --spritelayer name=digit_1 tileoffset=0 bpp=4 ^

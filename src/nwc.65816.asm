@@ -151,6 +151,8 @@ collectible_object .block
 
 ; player scoring (BCD)
 player_score        .word   ?
+; lives (3)
+player_lives        .byte   ?
 
 ; place hdma stuff
 * = $7e4000
@@ -329,6 +331,9 @@ hdma_scroll_b       .dunion HLWord
     PlayerNW        .binary "../data/Sprites/Player_NW.metasprite"
     Snowball        .binary "../data/Sprites/snowball.metasprite"
     Snowball_E      .binary "../data/Sprites/snowball_e.metasprite"
+
+    score           .binary "../data/Sprites/score_symbol.metasprite"
+    sled_symbol     .binary "../data/Sprites/sled_symbol.metasprite"
 
     Digits
         .word   <>digit_0
