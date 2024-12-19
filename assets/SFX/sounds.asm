@@ -7,7 +7,7 @@
 .define MUS_UNTITLED	0
 
 .section ".roDataSoundCode1" superfree
-spc700_code_1:	.incbin "spc700.bin" skip 0 read 30178
+spc700_code_1:	.incbin "spc700.bin" skip 0 read 25174
 spc700_code_2:
 .ends
 

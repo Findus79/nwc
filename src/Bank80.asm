@@ -190,10 +190,10 @@ Game_Loop_Wait
 
 
 .include "defines.asm"
-;.include "spc.asm"
 .include "titlescreen.asm"
 .include "ingame.asm"
 .include "endscreen.asm"
+.include "gameover.asm"
 .include "music/music.asm"
 
 DMAZero .word   $0000

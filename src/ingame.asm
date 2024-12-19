@@ -385,9 +385,8 @@ Ingame_Loop .block
 
         ; draw score on top using sprites
         jsr     DrawScore
+        
         jsr     DrawLives
-
-        ; draw player sprite first (in front of everything else)
         DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
         
         ; handle/bullets
@@ -398,9 +397,9 @@ Ingame_Loop .block
 
         ; so some collision checks
         jsr     CheckBulletsVsEnemies
-        jsr     CheckItemsVsPlayer
         jsr     CheckBulletsVsPlayer
-        
+        jsr     CheckItemsVsPlayer
+
         ; check enemy wave status
         jsr     CheckCurrentWave
         bmi     _enemy_updates  ; continue with enemy updates
@@ -523,6 +522,11 @@ Ingame_Loop .block
         rts
 .bend
 
+Ingame_HandleBeingHit .block
+
+    rts
+.bend
+
 HandleInput .block
     #A16    
     _move_left
@@ -561,8 +565,11 @@ HandleInput .block
         jsr     ShootSnowball
         ; play sfx
         #AXY8
-        lda     #0
-        jsr     Play_SFX
+        phy
+            lda     #2
+            ldy     #5
+            jsr     Play_SFX
+        ply
     
     _input_done
     rts
@@ -570,6 +577,7 @@ HandleInput .block
 
 MovePlayer_Left .block
     #A16
+    dec     reg_scroll_h_bg1
     dec     reg_scroll_h_bg1
     dec     reg_scroll_h_bg1
     dec     reg_scroll_h_bg2
@@ -586,6 +594,7 @@ MovePlayer_Left .block
 
 MovePlayer_Right .block
     #A16
+    inc     reg_scroll_h_bg1
     inc     reg_scroll_h_bg1
     inc     reg_scroll_h_bg1
     inc     reg_scroll_h_bg2
@@ -1007,9 +1016,6 @@ CheckBulletsVsEnemies .block
                 ; enemy has been hit -> dec hitpoints and remove if required
                 ; play sfx
                 #AXY8
-                lda     #1
-                jsr     Play_SFX
-                
                 lda     #0
                 sta     tmp_2                   ; remove bullet
                 lda     enemy_objects,X+11      ; load current hitpoints
@@ -1050,6 +1056,11 @@ CheckBulletsVsEnemies .block
 .bend
 
 RemoveEnemy .block
+    phy
+        lda     #1
+        ldy     #6
+        jsr     Play_SFX
+    ply
     lda     #0
     sta     enemy_objects,X
     ; spawn new item at enemy position
@@ -1058,7 +1069,7 @@ RemoveEnemy .block
     lda     enemy_objects,X+4     ; y position
     sta     tmp_1
     jsr     SpawnItem             ; spawn item at pos
-
+    jsr     Add_KillPoints        ; add points to score
     rts
 .bend
 
@@ -1270,9 +1281,12 @@ CheckItemsVsPlayer .block
             ; collect item
             lda     #0
             sta     collectible_object,X    ; remove it
-            lda     #2
-            jsr     Play_SFX
-            jsr     Add_Points              ; scoring
+            phy
+                lda     #0
+                ldy     #7
+                jsr     Play_SFX
+            ply
+            jsr     Add_DiscPoints              ; scoring
 
             _done            
         .bend
@@ -1337,12 +1351,29 @@ CheckBulletsVsPlayer .block
             ; player hit by bullet
             lda     #0
             sta     enemy_bullets,X    ; remove it
-            lda     #2
-            jsr     Play_SFX
+            phy
+                lda     #1
+                ldy     #6
+                jsr     Play_SFX
+            ply
 
-            ;lda     player_lives
-            ;dec     A
-            ;sta     player_lives
+            ; trigger screen effect
+            
+            #A8
+            lda     player_lives
+            clc
+            dec     A
+            sta     player_lives
+
+            bne     _done
+
+            ; --> lost game
+            #A16
+            lda     #120
+            sta     wtmp_1
+            lda     #<>Ingame_LostGame
+            sta     gamestate_ptr
+            #A8
 
             _done            
         .bend
@@ -1569,6 +1600,31 @@ Ingame_FinishedGame .block
 
     ; fade out and switch to exit screen
     lda     #<>Ingame_FadeOut
+    sta     gamestate_ptr
+
+    _done
+    rts
+.bend
+
+Ingame_LostGame .block
+    #A16
+    jsr     ShadowOAM_Clear         ; clear all sprites
+
+    #A8
+    jsr     SetOAMPtr           ; start at beginning
+    
+    ; handle items
+    jsr     UpdateItems
+    
+    #A16
+    lda     wtmp_1
+    sec
+    sbc     #1
+    sta     wtmp_1
+    bpl     _done
+
+    ; fade out and switch to exit screen
+    lda     #<>Gameover_OnEnter
     sta     gamestate_ptr
 
     _done
@@ -1808,6 +1864,14 @@ Ingame_MoveEnemy .block
     cmp     #$aaaa
     bcs     _remove_enemy
     sta     wtmp_1
+    jmp     _move_enemy
+
+    _remove_enemy
+        #A8
+        lda     #0
+        sta     enemy_objects,X
+        #A16
+        jmp     _done
     
     ; move enemy (something clumsy but.. meh)
     _move_enemy
@@ -1860,9 +1924,17 @@ Ingame_MoveEnemy .block
         
         ; check if we should fire a bullet
         #A8
+        lda     enemy_objects,X
+        bit     ENEMY_SHOOT
+        beq     _next           ; not allowed to shoot
+
         lda     player_one.screenpos.x.hi
         cmp     enemy_objects,X+2
         bne     _next
+
+        lda     enemy_objects,X
+        and     ENEMY_REMOVE_SHOT
+        sta     enemy_objects,X
 
         lda     enemy_objects,X+2
         clc
@@ -1872,13 +1944,7 @@ Ingame_MoveEnemy .block
         sta     tmp_1
         jsr     SpawnEnemyBullet
         jmp     _next
-
-    _remove_enemy
-        #A8
-        lda     #0
-        sta     enemy_objects,X
-        #A16
-        jmp     _done
+    
 
     _next
         ; increment pattern offset pointer by four bytes
@@ -1894,23 +1960,33 @@ Ingame_MoveEnemy .block
 
 Play_SFX .block ; A sfx index
     phx
-    phy
         ldx     #127
-        ldy     #6
         jsl     SFX_Play_Center
-    ply
     plx
-
     rts
 .bend
 
-Add_Points .block ; increment score
+Add_DiscPoints .block ; increment score
     php
     #A16
     sed     ; switch to decimal mode
     clc
     lda     player_score
     adc     #10      ; add one disk
+    sta     player_score
+    cld     ; back to binary
+    #A8
+    plp
+    rts
+.bend
+
+Add_KillPoints .block ; increment score
+    php
+    #A16
+    sed     ; switch to decimal mode
+    clc
+    lda     player_score
+    adc     #1      ; add one kill
     sta     player_score
     cld     ; back to binary
     #A8
@@ -1936,7 +2012,7 @@ Ingame_VBlank .block
 
             clc
             lda     reg_scroll_v_bg1
-            sbc     #4
+            sbc     #6
             and     #%0000000111111111
             sta     reg_scroll_v_bg1
             
