@@ -1,6 +1,6 @@
 ; some defines for gamestates etc...
 
-PLAYER_SPEED        = #384
+PLAYER_SPEED        = #511
 
 ENEMY_STRIDE        = 15
 
@@ -17,7 +17,7 @@ ENEMY_WAITING       = #%01000000
 ENEMY_SHOOT         = #%00100000
 ENEMY_INIT          = #%11100000
 
-ENEMY_EXPLODE       = #%00010000
+ENEMY_EXPLODE       = #%00011111
 ENEMY_REMOVE_SHOT   = #%11011111
 
 UNSET_ENEMY_WAITING = #%10111111

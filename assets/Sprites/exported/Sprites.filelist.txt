@@ -1,10 +1,12 @@
 sprites.png
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.MainSprite.layer-player_explosion.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.MainSprite.layer-Player_NW.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.MainSprite.layer-Player_SF.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.spr_gingerbreadman.layer-Layer 1.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.snowball.layer-snowball_e.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.snowball.layer-snowball.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.snowman_ufo.layer-ufo_elf_alt.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.snowman_ufo.layer-ufo_explosion.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.snowman_ufo.layer-ufo_elf.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.floppy.layer-floppy.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.santa.layer-santa.map001.json
@@ -44,3 +46,7 @@ D:\Projekte\Christmas\assets\Sprites\exported\sprites.digits.layer-digit_1.map00
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.digits.layer-digit_0.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.Floppy_Big.layer-sled_symbol.map001.json
 D:\Projekte\Christmas\assets\Sprites\exported\sprites.Floppy_Big.layer-score_symbol.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.Levels.layer-04.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.Levels.layer-03.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.Levels.layer-02.map001.json
+D:\Projekte\Christmas\assets\Sprites\exported\sprites.Levels.layer-01.map001.json

@@ -436,27 +436,27 @@ hdma_scroll_b       .dunion HLWord
         .word   <>Wave_1           ; wave-def addr
         .word   <>Wave_2
         .word   <>Wave_3
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
-        .word   <>Wave_1
-        .word   <>Wave_2
+        .word   <>Wave_4
+        .word   <>Wave_5
+        .word   <>Wave_6
+        .word   <>Wave_7
+        .word   <>Wave_8
+        .word   <>Wave_9
+        .word   <>Wave_10
+        .word   <>Wave_11
+        .word   <>Wave_12
+        .word   <>Wave_13
+        .word   <>Wave_14
+        .word   <>Wave_15
+        .word   <>Wave_16
+        .word   <>Wave_17
+        .word   <>Wave_18
+        .word   <>Wave_19
+        .word   <>Wave_20
+        .word   <>Wave_21
+        .word   <>Wave_22
+        .word   <>Wave_23
+        .word   <>Wave_24
     .bend
 
     EnemyTable .block
@@ -502,6 +502,8 @@ hdma_scroll_b       .dunion HLWord
         Enemy_1         .binary "../data/Sprites/ufo_elf_alt.metasprite"
         Enemy_2         .binary "../data/Sprites/gingerbreadman.metasprite"
         Enemy_3         .binary "../data/Sprites/santa.metasprite"
+        Explosion_small .binary "../data/Sprites/ufo_explosion.metasprite"
+        Explosion_big   .binary "../data/Sprites/player_explosion.metasprite"
 
     ;wave definition. number of enemies: type, starting position, pattern and time-offset from wave start
     Wave_Definitions
@@ -750,11 +752,16 @@ hdma_scroll_b       .dunion HLWord
         .byte   40          ; hbox height
 
     .bend
-    Wave_4
-    Wave_5
-    Wave_6
-    Wave_7
-    Wave_8
+    Wave_4 .block
+    .bend
+    Wave_5 .block
+    .bend
+    Wave_6 .block
+    .bend
+    Wave_7 .block
+    .bend
+    Wave_8 .block
+    .bend
     Wave_9
     Wave_10
     Wave_11

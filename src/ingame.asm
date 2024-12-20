@@ -310,25 +310,13 @@ Ingame_OnEnter .block
     lda     #2
     sta     player_one.speed
 
-    lda     #3
+    lda     #5
     sta     player_lives
 
     ; clear all player bullets
     jsr     ClearBullets
     jsr     ClearItems
-
-    .block; clear enemy objects
-        #A8
-        lda     #0
-        #XY16
-        ldx     #(16*ENEMY_STRIDE)
-        _loop
-            sta enemy_objects,X
-            dex
-            bne _loop
-        ; clear last element
-        sta enemy_objects,X
-    .bend
+    jsr     ClearEnemies
 
     ; load first wave definition
     lda     #0
@@ -401,8 +389,9 @@ Ingame_Loop .block
         jsr     CheckItemsVsPlayer
 
         ; check enemy wave status
-        jsr     CheckCurrentWave
-        bmi     _enemy_updates  ; continue with enemy updates
+        jsr     CheckCurrentWave    ; puts 0/1 in tmp_0 (0 alive, 1 wave done)
+        lda     tmp_0
+        beq     _enemy_updates
 
         ; move to next wave
         #A8
@@ -422,6 +411,9 @@ Ingame_Loop .block
         jmp     _done
 
         _next_wave
+            brk
+            nop
+            nop
             lda     #0
             ora     WAVENUMBER_INIT
             sta     wave_init_state
@@ -453,8 +445,11 @@ Ingame_Loop .block
 
                 #A8
                 lda     enemy_objects,X     ; load flags
+                bit     ENEMY_EXPLODE
+                bne     _exploding
+
                 bit     ENEMY_ALIVE         ; skip if enemy is not alive
-                beq     _next_enemy         ; next/prev. enemy 
+                beq     _next_enemy         ; next/prev. enemy
 
                 bit     ENEMY_WAITING       ; if enemy is waiting -> decrement frame counter
                 beq     _update_enemy       ; not waiting -> move
@@ -477,7 +472,26 @@ Ingame_Loop .block
                     sta     wave_pattern_ptr
                     #A8
                     jsr     Ingame_MoveEnemy
-                                        
+                    jmp     _draw_enemy
+
+                _exploding
+                    #A16
+                    lda     #<>Explosion_small
+                    sta     sprite_data_ptr
+                    #A8
+                    lda     enemy_objects,X
+                    and     #%00001111
+                    beq     _remove_explosion
+                    dec     A
+                    sta     enemy_objects,X         ; disable after one frame
+                    #A16
+                    jmp     _draw_enemy
+
+                _remove_explosion
+                    lda     #0
+                    sta     enemy_objects,X
+                    #A16
+
                 _draw_enemy
                     .block ; draw sprite
                         pha
@@ -790,6 +804,21 @@ ClearItems .block
     rts
 .bend
 
+ClearEnemies .block; clear enemy objects   
+    #A8
+    lda     #0
+    #XY16
+    ldx     #(16*ENEMY_STRIDE)
+    _loop
+        sta enemy_objects,X
+        dex
+        bne _loop
+    ; clear last element
+    sta enemy_objects,X
+    #AXY8
+    rts
+.bend
+
 UpdatePlayerBullets .block ; player bullet update    
     ldx #(31*5)             ; start with last bullet
 
@@ -939,9 +968,9 @@ UpdateItems .block ; collectible item update
 CheckCurrentWave .block
     #A8
     ; simple check if all enemies are dones (killed or end of wave animation)
+    stz     tmp_0
     ldx #(15*ENEMY_STRIDE)             ; start with last enemy
     _enemy_check_loop
-
         lda     enemy_objects,X     ; load enemy flags
         bne     _done               ; if not zero -> someone is still alive -> early out
 
@@ -955,7 +984,8 @@ CheckCurrentWave .block
         jmp     _enemy_check_loop   ; next enemy
             
     _all_dead_or_gone
-        rep     #$80                ; set zero flag
+        lda     #1
+        sta     tmp_0
 
     _done
     rts
@@ -1061,7 +1091,8 @@ RemoveEnemy .block
         ldy     #6
         jsr     Play_SFX
     ply
-    lda     #0
+
+    lda     ENEMY_EXPLODE
     sta     enemy_objects,X
     ; spawn new item at enemy position
     lda     enemy_objects,X+2     ; x position
@@ -1485,7 +1516,10 @@ Ingame_MovePlayerToStartingPosition .block
 
     _done
         #A8
-        jsr     SetOAMPtr   ; clear sprite shadow table
+        jsr     SetOAMPtr           ; start at beginning
+        ; draw score
+        jsr     DrawScore
+        jsr     DrawLives
         ; draw player sprite
         DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
     rts
@@ -1633,6 +1667,7 @@ Ingame_LostGame .block
 
 WavenumberInit .block
     #A8
+    jsr     ClearEnemies
     jsr     ClearBullets
     
     ; load wave number sprite
