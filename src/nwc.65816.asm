@@ -444,18 +444,18 @@ hdma_scroll_b       .dunion HLWord
         .word   <>Wave_9
         .word   <>Wave_10
         .word   <>Wave_11
-        .word   <>Wave_12
-        .word   <>Wave_13
-        .word   <>Wave_14
-        .word   <>Wave_15
-        .word   <>Wave_16
-        .word   <>Wave_17
-        .word   <>Wave_18
-        .word   <>Wave_19
-        .word   <>Wave_20
-        .word   <>Wave_21
-        .word   <>Wave_22
-        .word   <>Wave_23
+        .word   <>Wave_8
+        .word   <>Wave_4
+        .word   <>Wave_7
+        .word   <>Wave_10
+        .word   <>Wave_3
+        .word   <>Wave_9
+        .word   <>Wave_2
+        .word   <>Wave_10
+        .word   <>Wave_5
+        .word   <>Wave_3
+        .word   <>Wave_8
+        .word   <>Wave_11
         .word   <>Wave_24
     .bend
 
@@ -464,6 +464,7 @@ hdma_scroll_b       .dunion HLWord
         .word   <>Enemy_0
         .word   <>Enemy_1
         .word   <>Enemy_2
+        .word   <>Enemy_3
     .bend
 
     PatternTable .block
@@ -471,6 +472,10 @@ hdma_scroll_b       .dunion HLWord
         .word   <>Pattern_0
         .word   <>Pattern_1
         .word   <>Pattern_2
+        .word   <>Pattern_3
+        .word   <>Pattern_4
+        .word   <>Pattern_5
+        .word   <>Pattern_6
     .bend
 
 .send
@@ -701,25 +706,6 @@ hdma_scroll_b       .dunion HLWord
         .byte   0           ; hbox offset x
         .byte   16          ; hbox width
         .byte   16          ; hbox height
-
-
-        ; .byte   2           ; enemy type
-        ; .byte   100, 224    ; first enemy position x,y
-        ; .byte   0           ; pattern index
-        ; .word   3*8         ; frame offset until start
-        ; .byte   3           ; hitpoints
-        ; .byte   8           ; hbox offset x
-        ; .byte   16          ; hbox width
-        ; .byte   40          ; hbox height
-
-        ; .byte   2           ; enemy type
-        ; .byte   160, 224    ; first enemy position x,y
-        ; .byte   1           ; pattern index
-        ; .word   3*8         ; frame offset until start
-        ; .byte   3           ; hitpoints
-        ; .byte   8           ; hbox offset x
-        ; .byte   16          ; hbox width
-        ; .byte   40          ; hbox height
     .bend
     Wave_3 .block
         .byte   3
@@ -753,41 +739,638 @@ hdma_scroll_b       .dunion HLWord
 
     .bend
     Wave_4 .block
+        .byte   10
+
+        ; ----
+        .byte   2           ; enemy type
+        .byte   4*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   23*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   10*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   40*8         ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   18*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   40*8         ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+        ; -----
+        .byte   1           ; enemy type
+        .byte   15*8, 224    ; first enemy position x,y
+        .byte   3           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   15*8, 224    ; first enemy position x,y
+        .byte   4           ; pattern index
+        .word   8*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   15*8, 224    ; first enemy position x,y
+        .byte   3           ; pattern index
+        .word   16*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   15*8, 224    ; first enemy position x,y
+        .byte   4           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   7*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   36*8        ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   23*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   36*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
     .bend
     Wave_5 .block
+        .byte   12
+        ; ------------------
+        .byte   0           ; enemy type
+        .byte   3*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   7*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   11*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   15*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   19*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   23*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   27*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+        ; ---------------
+        .byte   1           ; enemy type
+        .byte   5*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   9*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   21*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   25*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+        ; ----------
+        .byte   2           ; enemy type
+        .byte   13*8, 224    ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   20*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
     .bend
     Wave_6 .block
+        .byte   1
+        ; ----------
+        .byte   3           ; enemy type
+        .byte   13*8, 224   ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   4*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
     .bend
     Wave_7 .block
+        .byte   8
+        ; ----------
+        .byte   0           ; enemy type
+        .byte   4*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   4*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   4*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   19*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   26*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   26*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   11*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   26*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   19*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+        ; ------------
+        .byte   2           ; enemy type
+        .byte   4*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   32*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   24*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   32*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
     .bend
     Wave_8 .block
-    .bend
-    Wave_9
-    Wave_10
-    Wave_11
-    Wave_12
-    Wave_13
-    Wave_14
-    Wave_15
-    Wave_16
-    Wave_17
-    Wave_18
-    Wave_19
-    Wave_20
-    Wave_21
-    Wave_22
-    Wave_23
-    Wave_24
+        .byte   6
+        ; -----------
+        .byte   3           ; enemy type
+        .byte   4*8, 224   ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
 
-    ; pattern definitions.
-    ; 16 bit length, n x/y pairs.
-    Pattern_Definitions
-        Pattern_0
-            .binary     "../data/Patterns/straight.pattern"
-        Pattern_1
-            .binary     "../data/Patterns/left_right.pattern"
-        Pattern_2
-            .binary     "../data/Patterns/right_left.pattern"       
+        .byte   3           ; enemy type
+        .byte   24*8, 224   ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+        ; ------------
+        .byte   0           ; enemy type
+        .byte   9*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   12*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   3*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   18*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   21*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+    .bend
+    Wave_9 .block
+        .byte   15
+        ; ------------------------------
+        .byte   0           ; enemy type
+        .byte   2*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   2*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   8*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   2*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   16*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   2*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   5*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   4*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   5*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   12*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   5*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   20*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+        ; -------------
+        .byte   0           ; enemy type
+        .byte   28*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   2*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   8*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   28*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   16*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   28*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   25*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   4*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   25*8, 224    ; first enemy position x,y
+        .byte   6          ; pattern index
+        .word   12*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   0           ; enemy type
+        .byte   25*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   20*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+        ; ------------------
+        .byte   3           ; enemy type
+        .byte   14*8, 224   ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   40*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+    .bend
+    Wave_10 .block
+        .byte   3
+        ; -----------------
+        .byte   3           ; enemy type
+        .byte   4*8, 224   ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   3           ; enemy type
+        .byte   24*8, 224   ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   3           ; enemy type
+        .byte   14*8, 224   ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+    .bend
+    Wave_11 .block
+        .byte   6
+        ; --------------------
+        .byte   2           ; enemy type
+        .byte   4*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   1*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   8*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   10*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   12*8, 224    ; first enemy position x,y
+        .byte   1           ; pattern index
+        .word   19*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   16*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   28*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   20*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   37*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   2           ; enemy type
+        .byte   24*8, 224    ; first enemy position x,y
+        .byte   2           ; pattern index
+        .word   46*8        ; frame offset until start
+        .byte   3           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+    .bend
+    Wave_24 .block
+        .byte   6
+        ; --------------------------
+        .byte   3           ; enemy type
+        .byte   4*8, 224   ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   1*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        .byte   3           ; enemy type
+        .byte   24*8, 224   ; first enemy position x,y
+        .byte   0           ; pattern index
+        .word   16*8         ; frame offset until start
+        .byte   5           ; hitpoints
+        .byte   8           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   40          ; hbox height
+
+        ; ----------------------------
+        .byte   1           ; enemy type
+        .byte   5*8, 224    ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   15*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   5*8, 224   ; first enemy position x,y
+        .byte   5           ; pattern index
+        .word   32*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   25*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   24*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+
+        .byte   1           ; enemy type
+        .byte   25*8, 224    ; first enemy position x,y
+        .byte   6           ; pattern index
+        .word   48*8         ; frame offset until start
+        .byte   1           ; hitpoints
+        .byte   0           ; hbox offset x
+        .byte   16          ; hbox width
+        .byte   16          ; hbox height
+    .bend
 .send
 
 .section secBank83
@@ -796,6 +1379,26 @@ hdma_scroll_b       .dunion HLWord
 
     music_1
     .binary     "../data/Music/music_1.bin"
+.send
+
+.section secBank84
+    ; pattern definitions.
+    ; 16 bit length, n x/y pairs.
+    Pattern_Definitions
+        Pattern_0
+            .binary     "../data/Patterns/straight.pattern"
+        Pattern_1
+            .binary     "../data/Patterns/left_right.pattern"
+        Pattern_2
+            .binary     "../data/Patterns/right_left.pattern"
+        Pattern_3
+            .binary     "../data/Patterns/wobble_right.pattern"
+        Pattern_4
+            .binary     "../data/Patterns/wobble_left.pattern"
+        Pattern_5
+            .binary     "../data/Patterns/cross_left-right.pattern"
+        Pattern_6
+            .binary     "../data/Patterns/cross_right-left.pattern"
 .send
 
 ; useful definitions from Oziphantom

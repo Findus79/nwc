@@ -9,7 +9,7 @@ BULLET_IN_USE       = #%10000000
 BULLET_EXPLODING    = #%01000000
 BULLET_SPEED        = #700
 
-ITEM_SPEED          = #511
+ITEM_SPEED          = #384
 
 ; enemy flags
 ENEMY_ALIVE         = #%10000000
