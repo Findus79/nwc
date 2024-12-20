@@ -541,6 +541,7 @@ tmp_2               .byte   ?
 
 wtmp_0              .word   ?
 wtmp_1              .word   ?
+wtmp_2              .word   ?
 
 sprite_pos_x        .byte   ?
 sprite_pos_y        .byte   ?
@@ -548,6 +549,7 @@ sprite_data_ptr     .word   ?
 
 playersprite_bank   .byte   ?
 playersprite_addr   .word   ?
+selected_player     .word   ?
 
 sprite_address      .word   ?
 sprite_bank         .byte   ?

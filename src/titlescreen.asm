@@ -325,7 +325,7 @@ Titlescreen_OnEnter .block
     lda     #128
     sta     reg_scroll_h_bg1
     lda     #$0000
-    sta     playersprite_addr
+    sta     selected_player
     #A8
     lda     #$00
     sta     playersprite_bank
@@ -415,7 +415,7 @@ Titlescreen_Main .block
             jmp     _done
 
         _start_game
-            lda     playersprite_addr
+            lda     selected_player
             beq     _done
 
         _exit
@@ -531,7 +531,7 @@ Titlescreen_LogoLeft .block
 
         ; select player sprite
         lda     #<>PlayerSF
-        sta     playersprite_addr
+        sta     selected_player
         #A8
         lda     #`PlayerSF
         sta     playersprite_bank
@@ -557,7 +557,7 @@ Titlescreen_LogoRight .block
         sta     gamestate_ptr
 
         lda     #<>PlayerNW
-        sta     playersprite_addr
+        sta     selected_player
         #A8
         lda     #`PlayerNW
         sta     playersprite_bank

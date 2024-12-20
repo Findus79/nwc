@@ -411,9 +411,6 @@ Ingame_Loop .block
         jmp     _done
 
         _next_wave
-            brk
-            nop
-            nop
             lda     #0
             ora     WAVENUMBER_INIT
             sta     wave_init_state
@@ -1388,15 +1385,21 @@ CheckBulletsVsPlayer .block
                 jsr     Play_SFX
             ply
 
-            ; trigger screen effect
+            ; set player sprite to explosion
+            #A16
+            lda     #<>Explosion_big
+            sta     playersprite_addr
             
             #A8
+            lda     #`Enemy_Sprites
+            sta     playersprite_bank
+
             lda     player_lives
             clc
             dec     A
             sta     player_lives
 
-            bne     _done
+            bne     _start_over
 
             ; --> lost game
             #A16
@@ -1404,9 +1407,17 @@ CheckBulletsVsPlayer .block
             sta     wtmp_1
             lda     #<>Ingame_LostGame
             sta     gamestate_ptr
-            #A8
+            jmp     _done
+
+            _start_over
+                #A16
+                lda     #40
+                sta     wtmp_2
+                lda     #<>Ingame_RestartWave
+                sta     gamestate_ptr
 
             _done            
+                #A8
         .bend
 
         _next_bullet
@@ -1496,6 +1507,12 @@ Ingame_FadeOut .block
 
 Ingame_MovePlayerToStartingPosition .block
     #A16
+    lda     selected_player
+    sta     playersprite_addr
+    #A8
+    lda     #`PlayerSF
+    sta     playersprite_bank
+
     jsr     ShadowOAM_Clear
 
     #A8
@@ -1510,6 +1527,7 @@ Ingame_MovePlayerToStartingPosition .block
     ora     WAVENUMBER_INIT
     sta     wave_init_state
 
+    jsr     ClearItems
     #A16
     lda     #<>Ingame_StartNextWave
     sta     gamestate_ptr
@@ -1607,6 +1625,42 @@ Ingame_StartNextWave .block
         jsr     UpdateItems
         jsr     CheckItemsVsPlayer
 
+    rts
+.bend
+
+Ingame_RestartWave .block
+    #A16
+    jsr     ShadowOAM_Clear         ; clear all sprites
+    #A8
+    jsr     SetOAMPtr           ; start at beginning
+
+    jsr     DrawScore
+    jsr     DrawLives
+
+    DrawPlayerSprite player_one.screenpos.x.hi, player_one.screenpos.y.hi
+    
+    brk
+    nop
+    nop
+    #A16
+    lda     wtmp_2
+    sec
+    sbc     #1
+    sta     wtmp_2
+    bpl     _done
+
+    #A8
+    lda     #116
+    sta     player_one.screenpos.x.hi
+    lda     #223
+    sta     player_one.screenpos.y.hi
+
+    #A16
+    lda     #<>Ingame_MovePlayerToStartingPosition ; Start wave over...
+    sta     gamestate_ptr
+    
+    _done
+    #A8
     rts
 .bend
 
