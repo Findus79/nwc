@@ -257,6 +257,8 @@ Gameover_FadeIn .block
 .bend
 
 Gameover_VBlank .block
+    jsr     DMA_OAM
     jsr     PAD_READ
+
     rts
 .bend
