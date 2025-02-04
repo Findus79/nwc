@@ -1,3 +1,0 @@
-Ingame.png
-D:\Projekte\Christmas\assets\Ingame\exported\Ingame.Ingame.layer-Foreground.map001.json
-D:\Projekte\Christmas\assets\Ingame\exported\Ingame.Ingame.layer-Background.map001.json
