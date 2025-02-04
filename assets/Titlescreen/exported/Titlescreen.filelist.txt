@@ -1,3 +1,0 @@
-Titlescreen.png
-D:\Projekte\Christmas\assets\Titlescreen\exported\Titlescreen.NWC-Titlescreen.layer-Background.map001.json
-D:\Projekte\Christmas\assets\Titlescreen\exported\Titlescreen.Titlescreen-Logos.layer-Foreground.map001.json
